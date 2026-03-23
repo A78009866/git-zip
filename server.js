@@ -48,6 +48,12 @@ function requireAuth(req, res, next) {
   return res.redirect('/');
 }
 
+// API auth middleware - returns 401 JSON instead of redirect
+function requireApiAuth(req, res, next) {
+  if (req.session && req.session.githubToken) return next();
+  return res.status(401).json({ success: false, message: 'Not authenticated', authRequired: true });
+}
+
 // ─── Pages ───
 app.get('/', (req, res) => {
   if (req.session && req.session.githubToken) return res.redirect('/dashboard');
@@ -114,7 +120,7 @@ app.get('/api/logout', (req, res) => {
   res.redirect('/');
 });
 
-app.get('/api/me', requireAuth, (req, res) => {
+app.get('/api/me', requireApiAuth, (req, res) => {
   res.json({
     username: req.session.githubUser,
     name: req.session.githubName,
@@ -123,7 +129,7 @@ app.get('/api/me', requireAuth, (req, res) => {
 });
 
 // ─── GitHub Repos ───
-app.get('/api/github/repos', requireAuth, async (req, res) => {
+app.get('/api/github/repos', requireApiAuth, async (req, res) => {
   try {
     const response = await axios.get('https://api.github.com/user/repos?per_page=100&sort=updated', {
       headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
@@ -145,7 +151,7 @@ app.get('/api/github/repos', requireAuth, async (req, res) => {
   }
 });
 
-app.post('/api/github/create-repo', requireAuth, async (req, res) => {
+app.post('/api/github/create-repo', requireApiAuth, async (req, res) => {
   try {
     const { name, description, isPrivate } = req.body;
     if (!name) return res.json({ success: false, message: 'Repository name is required' });
@@ -180,7 +186,7 @@ app.post('/api/github/create-repo', requireAuth, async (req, res) => {
 });
 
 // ─── Upload ZIP & Push to GitHub ───
-app.post('/api/upload', requireAuth, upload.single('zipfile'), async (req, res) => {
+app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, res) => {
   let extractPath = null;
   try {
     if (!req.file) return res.json({ success: false, message: 'No file uploaded' });

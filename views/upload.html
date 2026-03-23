@@ -292,8 +292,19 @@
       document.getElementById('dropdownOverlay').classList.remove('show');
     }
 
+    // Helper: fetch with auth check
+    async function apiFetch(url, opts){
+      const res = await fetch(url, opts);
+      if(res.status===401){
+        localStorage.removeItem('gitzip_user');
+        window.location.href='/';
+        throw new Error('auth');
+      }
+      return res.json();
+    }
+
     // Also fetch fresh user data
-    fetch('/api/me').then(r=>r.json()).then(d=>{
+    apiFetch('/api/me').then(d=>{
       localStorage.setItem('gitzip_user',JSON.stringify(d));
       applyUserData(d);
     }).catch(()=>{});
@@ -342,8 +353,7 @@
 
     async function loadRepos() {
       try {
-        const res = await fetch('/api/github/repos');
-        const data = await res.json();
+        const data = await apiFetch('/api/github/repos');
         if (data.success) {
           repos = data.repos;
           renderRepoCards(repos);
@@ -353,8 +363,11 @@
             const match = repos.find(r => r.full_name === preselectedRepo);
             if (match) selectRepo(match.full_name, match.default_branch);
           }
+        } else {
+          document.getElementById('repoLoading').innerHTML = '<p style="color:#fca5a5;">'+( data.message || 'فشل تحميل المستودعات')+'</p>';
         }
       } catch (err) {
+        if(err.message==='auth') return;
         document.getElementById('repoLoading').innerHTML = '<p style="color:#fca5a5;">فشل تحميل المستودعات</p>';
       }
     }
@@ -369,11 +382,10 @@
       hideMsg('createRepoError'); hideMsg('createRepoSuccess');
 
       try {
-        const res = await fetch('/api/github/create-repo', {
+        const data = await apiFetch('/api/github/create-repo', {
           method: 'POST', headers: {'Content-Type':'application/json'},
           body: JSON.stringify({ name, description: document.getElementById('newRepoDesc').value.trim(), isPrivate: document.getElementById('newRepoPrivate').checked })
         });
-        const data = await res.json();
         if (data.success) {
           selectedRepo = data.repo.full_name;
           document.getElementById('createRepoSuccess').innerHTML = 'تم انشاء المستودع <a href="https://github.com/'+data.repo.full_name+'" target="_blank">'+data.repo.full_name+'</a> بنجاح';
@@ -433,8 +445,7 @@
       }, 800);
 
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
+        const data = await apiFetch('/api/upload', { method: 'POST', body: formData });
         clearInterval(iv); pf.style.width = '100%';
         if (data.success) {
           pt.textContent = 'تم بنجاح';

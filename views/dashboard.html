@@ -239,11 +239,21 @@
       renderRepos(allRepos.filter(r=>r.name.toLowerCase().includes(q)||(r.description||'').toLowerCase().includes(q)));
     });
 
+    async function apiFetch(url, opts){
+      const res = await fetch(url, opts);
+      if(res.status===401){
+        localStorage.removeItem('gitzip_user');
+        window.location.href='/';
+        throw new Error('auth');
+      }
+      return res.json();
+    }
+
     async function init(){
       try{
         const[meRes,reposRes]=await Promise.all([
-          fetch('/api/me').then(r=>r.json()),
-          fetch('/api/github/repos').then(r=>r.json())
+          apiFetch('/api/me'),
+          apiFetch('/api/github/repos')
         ]);
         localStorage.setItem('gitzip_user',JSON.stringify(meRes));
         applyUserData(meRes);
@@ -257,6 +267,7 @@
         document.getElementById('loading').style.display='none';
         document.getElementById('content').style.display='block';
       }catch(err){
+        if(err.message==='auth') return;
         if(cachedUser){
           document.getElementById('loading').style.display='none';
           document.getElementById('content').style.display='block';
