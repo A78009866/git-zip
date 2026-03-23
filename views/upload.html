@@ -6,275 +6,90 @@
   <title>رفع ZIP - git-zip</title>
   <link rel="icon" href="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: #0a0a0a;
-      color: #e0e0e0;
-      min-height: 100vh;
-    }
-    .navbar {
-      background: #111;
-      border-bottom: 1px solid #1e1e1e;
-      padding: 14px 30px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-    }
-    .nav-brand img {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-    }
-    .nav-brand h1 {
-      font-size: 1.3rem;
-      color: #fff;
-    }
-    .nav-brand h1 span { color: #58a6ff; }
-    .nav-actions a {
-      color: #58a6ff;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .nav-actions a:hover { text-decoration: underline; }
-    .container {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    .card {
-      background: #111;
-      border: 1px solid #1e1e1e;
-      border-radius: 16px;
-      padding: 36px;
-      margin-bottom: 24px;
-    }
-    .card h2 {
-      color: #fff;
-      margin-bottom: 8px;
-      font-size: 1.4rem;
-    }
-    .card > .subtitle {
-      color: #8b949e;
-      margin-bottom: 24px;
-      font-size: 0.9rem;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh}
+    .navbar{background:#09090b;border-bottom:1px solid #18181b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+    .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .nav-brand img{width:32px;height:32px;border-radius:8px}
+    .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
+    .nav-brand h1 span{color:#3b82f6}
+    .nav-back{display:flex;align-items:center;gap:6px;color:#71717a;text-decoration:none;font-size:0.85rem;transition:color .2s}
+    .nav-back:hover{color:#a1a1aa}
+    .nav-back svg{width:18px;height:18px}
+    .container{max-width:700px;margin:0 auto;padding:32px 24px}
+    .page-title{font-size:1.5rem;color:#fafafa;font-weight:700;margin-bottom:32px;display:flex;align-items:center;gap:10px}
+    .page-title svg{width:24px;height:24px;stroke:#3b82f6}
+    /* Cards */
+    .card{background:#111113;border:1px solid #1c1c1f;border-radius:16px;padding:28px;margin-bottom:20px}
+    .card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+    .card-header .step-num{width:28px;height:28px;border-radius:8px;background:#3b82f615;color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .card-header h3{color:#fafafa;font-size:1.05rem;font-weight:600}
+    .card-desc{color:#52525b;font-size:0.85rem;margin-bottom:20px;margin-right:38px}
     /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 0;
-      margin-bottom: 24px;
-      border-bottom: 1px solid #21262d;
-    }
-    .tab {
-      padding: 12px 24px;
-      background: none;
-      border: none;
-      color: #8b949e;
-      font-size: 0.95rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s;
-    }
-    .tab.active {
-      color: #58a6ff;
-      border-bottom-color: #58a6ff;
-    }
-    .tab:hover { color: #c9d1d9; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .tabs{display:flex;gap:0;margin-bottom:20px;background:#09090b;border-radius:10px;padding:4px;border:1px solid #1c1c1f}
+    .tab{flex:1;padding:10px 16px;background:none;border:none;color:#52525b;font-size:0.85rem;cursor:pointer;border-radius:8px;transition:all .2s;font-weight:500}
+    .tab.active{background:#18181b;color:#fafafa}
+    .tab:hover:not(.active){color:#71717a}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
     /* Form */
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      color: #c9d1d9;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-    select, input[type="text"] {
-      width: 100%;
-      padding: 12px 16px;
-      background: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      color: #e0e0e0;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.3s;
-      appearance: none;
-      -webkit-appearance: none;
-    }
-    select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b949e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: left 14px center;
-      padding-left: 36px;
-    }
-    select:focus, input:focus {
-      border-color: #58a6ff;
-    }
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .checkbox-group input[type="checkbox"] {
-      accent-color: #58a6ff;
-      width: 18px;
-      height: 18px;
-    }
-    .checkbox-group label {
-      margin-bottom: 0;
-      font-size: 0.9rem;
-    }
+    .form-group{margin-bottom:18px}
+    label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
+    select,input[type="text"]{width:100%;padding:11px 14px;background:#09090b;border:1px solid #27272a;border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+    select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2352525b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:34px}
+    select:focus,input:focus{border-color:#3b82f6}
+    .checkbox-group{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+    .checkbox-group input[type="checkbox"]{accent-color:#3b82f6;width:16px;height:16px}
+    .checkbox-group label{margin-bottom:0;font-size:0.85rem}
+    /* Repo cards in select */
+    .repo-select-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#09090b;border:1px solid #27272a;border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .repo-select-card:hover{border-color:#3f3f46}
+    .repo-select-card.selected{border-color:#3b82f6;background:#3b82f608}
+    .repo-select-card .rsc-icon{width:36px;height:36px;background:#18181b;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .repo-select-card .rsc-icon svg{width:18px;height:18px;stroke:#3b82f6}
+    .repo-select-card .rsc-info h4{color:#fafafa;font-size:0.88rem;font-weight:600;margin-bottom:2px}
+    .repo-select-card .rsc-info p{color:#52525b;font-size:0.75rem}
+    .repo-select-card .rsc-badge{padding:2px 8px;border-radius:100px;font-size:0.65rem;font-weight:600;margin-right:auto}
+    .repos-scroll{max-height:300px;overflow-y:auto;padding-left:4px}
+    .repos-scroll::-webkit-scrollbar{width:4px}
+    .repos-scroll::-webkit-scrollbar-track{background:transparent}
+    .repos-scroll::-webkit-scrollbar-thumb{background:#27272a;border-radius:4px}
+    .search-mini{display:flex;align-items:center;gap:8px;background:#09090b;border:1px solid #27272a;border-radius:10px;padding:10px 14px;margin-bottom:12px}
+    .search-mini svg{width:16px;height:16px;stroke:#52525b;flex-shrink:0}
+    .search-mini input{background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;width:100%}
+    .search-mini input::placeholder{color:#3f3f46}
     /* Drop zone */
-    .drop-zone {
-      border: 2px dashed #30363d;
-      border-radius: 14px;
-      padding: 50px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: 20px;
-      background: #0d1117;
-    }
-    .drop-zone:hover, .drop-zone.dragover {
-      border-color: #58a6ff;
-      background: #0d111799;
-    }
-    .drop-zone .icon {
-      font-size: 3rem;
-      margin-bottom: 12px;
-    }
-    .drop-zone p {
-      color: #8b949e;
-      font-size: 0.95rem;
-    }
-    .drop-zone .file-name {
-      color: #58a6ff;
-      font-weight: 600;
-      margin-top: 8px;
-    }
-    .file-input {
-      display: none;
-    }
-    .btn {
-      padding: 14px 28px;
-      border: none;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      width: 100%;
-    }
-    .btn-primary {
-      background: #58a6ff;
-      color: #0a0a0a;
-    }
-    .btn-primary:hover {
-      background: #79b8ff;
-    }
-    .btn-primary:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .btn-success {
-      background: #238636;
-      color: #fff;
-    }
-    .btn-success:hover {
-      background: #2ea043;
-    }
-    .btn-success:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .error-msg {
-      background: #f8514926;
-      border: 1px solid #f8514966;
-      color: #f85149;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      font-size: 0.9rem;
-      display: none;
-    }
-    .success-msg {
-      background: #23863633;
-      border: 1px solid #23863666;
-      color: #3fb950;
-      padding: 14px 18px;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      font-size: 0.95rem;
-      display: none;
-      line-height: 1.7;
-    }
-    .success-msg a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
-    .success-msg a:hover { text-decoration: underline; }
+    .drop-zone{border:2px dashed #27272a;border-radius:16px;padding:48px 20px;text-align:center;cursor:pointer;transition:all .3s;background:#0a0a0c}
+    .drop-zone:hover,.drop-zone.dragover{border-color:#3b82f6;background:#3b82f605}
+    .drop-zone-icon{width:56px;height:56px;margin:0 auto 16px;background:#18181b;border-radius:16px;display:flex;align-items:center;justify-content:center}
+    .drop-zone-icon svg{width:26px;height:26px;stroke:#3b82f6}
+    .drop-zone p{color:#52525b;font-size:0.9rem}
+    .drop-zone .file-name{color:#3b82f6;font-weight:600;margin-top:8px;font-size:0.9rem}
+    .file-input{display:none}
+    /* Buttons */
+    .btn{padding:12px 24px;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all .25s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-primary{background:#3b82f6;color:#fff}
+    .btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+    .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+    .btn-success{background:#059669;color:#fff}
+    .btn-success:hover{background:#047857}
+    .btn-success:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+    .btn svg{width:18px;height:18px}
+    /* Messages */
+    .error-msg{background:#7f1d1d20;border:1px solid #7f1d1d44;color:#fca5a5;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;display:none;align-items:center;gap:8px}
+    .error-msg svg{width:18px;height:18px;flex-shrink:0}
+    .success-msg{background:#05966920;border:1px solid #05966944;color:#6ee7b7;padding:14px 18px;border-radius:12px;margin-bottom:16px;font-size:0.88rem;display:none;line-height:1.7}
+    .success-msg a{color:#3b82f6;text-decoration:none}
+    .success-msg a:hover{text-decoration:underline}
     /* Progress */
-    .progress-container {
-      display: none;
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      background: #21262d;
-      border-radius: 8px;
-      height: 8px;
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-    .progress-fill {
-      background: linear-gradient(90deg, #58a6ff, #79b8ff);
-      height: 100%;
-      width: 0%;
-      border-radius: 8px;
-      transition: width 0.5s ease;
-    }
-    .progress-text {
-      color: #8b949e;
-      font-size: 0.85rem;
-      text-align: center;
-    }
-    .spinner {
-      display: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid #0a0a0a;
-      border-top: 2px solid transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      margin: 0 auto;
-    }
-    .spinner-white {
-      border-color: #fff;
-      border-top-color: transparent;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .divider {
-      border: none;
-      border-top: 1px solid #21262d;
-      margin: 24px 0;
-    }
-    .repo-loading {
-      text-align: center;
-      padding: 20px;
-      color: #8b949e;
-    }
+    .progress-container{display:none;margin-bottom:18px}
+    .progress-bar{background:#18181b;border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px}
+    .progress-fill{background:linear-gradient(90deg,#3b82f6,#60a5fa);height:100%;width:0%;border-radius:8px;transition:width .5s ease}
+    .progress-text{color:#52525b;font-size:0.8rem;text-align:center}
+    .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid #fff;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .repo-loading{text-align:center;padding:24px;color:#52525b;font-size:0.85rem}
+    .repo-loading .spinner{display:block;margin:0 auto 10px;border-color:#27272a;border-top-color:#3b82f6}
   </style>
 </head>
 <body>
@@ -283,39 +98,45 @@
       <img src="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg" alt="git-zip">
       <h1>git<span>-zip</span></h1>
     </a>
-    <div class="nav-actions">
-      <a href="/dashboard">لوحة التحكم</a>
-    </div>
+    <a href="/dashboard" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+      لوحة التحكم
+    </a>
   </nav>
 
   <div class="container">
-    <!-- Step 1: Choose repo -->
+    <h2 class="page-title">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+      رفع ملف ZIP
+    </h2>
+
+    <!-- Step 1 -->
     <div class="card">
-      <h2>1. اختيار المستودع</h2>
-      <p class="subtitle">اختر مستودعاً موجوداً أو أنشئ مستودعاً جديداً</p>
+      <div class="card-header">
+        <div class="step-num">1</div>
+        <h3>اختيار المستودع</h3>
+      </div>
+      <p class="card-desc">اختر مستودعا موجودا او انشئ مستودعا جديدا</p>
 
       <div class="tabs">
         <button class="tab active" onclick="switchTab('existing')">مستودع موجود</button>
-        <button class="tab" onclick="switchTab('new')">إنشاء مستودع جديد</button>
+        <button class="tab" onclick="switchTab('new')">انشاء مستودع جديد</button>
       </div>
 
-      <!-- Existing repo -->
       <div class="tab-content active" id="tab-existing">
         <div class="repo-loading" id="repoLoading">
-          <div class="spinner" style="display:block; margin-bottom:10px;"></div>
+          <div class="spinner" style="display:block"></div>
           جاري تحميل المستودعات...
         </div>
-        <div id="repoList" style="display:none;">
-          <div class="form-group">
-            <label>اختر المستودع</label>
-            <select id="repoSelect">
-              <option value="">-- اختر مستودعاً --</option>
-            </select>
+        <div id="repoList" style="display:none">
+          <div class="search-mini">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+            <input type="text" id="repoSearch" placeholder="بحث في المستودعات...">
           </div>
+          <div class="repos-scroll" id="reposScroll"></div>
         </div>
       </div>
 
-      <!-- New repo -->
       <div class="tab-content" id="tab-new">
         <div class="form-group">
           <label>اسم المستودع الجديد</label>
@@ -329,20 +150,26 @@
           <input type="checkbox" id="newRepoPrivate">
           <label for="newRepoPrivate">مستودع خاص (Private)</label>
         </div>
-        <div class="error-msg" id="createRepoError"></div>
+        <div class="error-msg" id="createRepoError">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          <span></span>
+        </div>
         <div class="success-msg" id="createRepoSuccess"></div>
         <button class="btn btn-success" id="createRepoBtn" onclick="createRepo()">
-          <span id="createRepoBtnText">إنشاء المستودع</span>
-          <div class="spinner spinner-white" id="createRepoSpinner"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          <span id="createRepoBtnText">انشاء المستودع</span>
+          <div class="spinner" id="createRepoSpinner"></div>
         </button>
       </div>
     </div>
 
-    <!-- Step 2: Upload settings -->
+    <!-- Step 2 -->
     <div class="card">
-      <h2>2. إعدادات الرفع</h2>
-      <p class="subtitle">حدد الفرع ورسالة الـ Commit</p>
-
+      <div class="card-header">
+        <div class="step-num">2</div>
+        <h3>اعدادات الرفع</h3>
+      </div>
+      <p class="card-desc">حدد الفرع ورسالة الـ Commit</p>
       <div class="form-group">
         <label>اسم الفرع (Branch)</label>
         <input type="text" id="branchName" value="main" placeholder="main">
@@ -353,29 +180,38 @@
       </div>
     </div>
 
-    <!-- Step 3: Upload ZIP -->
+    <!-- Step 3 -->
     <div class="card">
-      <h2>3. رفع ملف ZIP</h2>
-      <p class="subtitle">اسحب الملف أو اضغط لاختياره</p>
+      <div class="card-header">
+        <div class="step-num">3</div>
+        <h3>رفع الملف</h3>
+      </div>
+      <p class="card-desc">اسحب الملف او اضغط لاختياره</p>
 
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <div class="icon">📁</div>
-        <p>اسحب ملف ZIP هنا أو اضغط للاختيار</p>
+        <div class="drop-zone-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        </div>
+        <p>اسحب ملف ZIP هنا او اضغط للاختيار</p>
         <p class="file-name" id="fileName"></p>
       </div>
       <input type="file" id="fileInput" class="file-input" accept=".zip">
 
-      <div class="error-msg" id="uploadError"></div>
-      <div class="success-msg" id="uploadSuccess"></div>
+      <div class="error-msg" id="uploadError" style="margin-top:16px">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <span></span>
+      </div>
+      <div class="success-msg" id="uploadSuccess" style="margin-top:16px"></div>
 
-      <div class="progress-container" id="progressContainer">
+      <div class="progress-container" id="progressContainer" style="margin-top:16px">
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
         <p class="progress-text" id="progressText">جاري الرفع...</p>
       </div>
 
-      <button class="btn btn-primary" id="uploadBtn" onclick="uploadZip()" disabled>
+      <button class="btn btn-primary" id="uploadBtn" onclick="uploadZip()" disabled style="margin-top:16px">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
         <span id="uploadBtnText">رفع ونشر على GitHub</span>
         <div class="spinner" id="uploadSpinner"></div>
       </button>
@@ -387,7 +223,10 @@
     let selectedFile = null;
     let repos = [];
 
-    // Tab switching
+    // Check URL param for pre-selected repo
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedRepo = urlParams.get('repo');
+
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -401,164 +240,117 @@
       updateUploadButton();
     }
 
-    // Load repos
+    function renderRepoCards(list) {
+      const container = document.getElementById('reposScroll');
+      container.innerHTML = list.map(r => `
+        <div class="repo-select-card ${selectedRepo === r.full_name ? 'selected' : ''}" onclick="selectRepo('${r.full_name}','${r.default_branch}')">
+          <div class="rsc-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
+          </div>
+          <div class="rsc-info">
+            <h4>${r.full_name}</h4>
+            <p>${r.description || 'بدون وصف'}</p>
+          </div>
+          <span class="rsc-badge" style="background:${r.private ? '#7c3aed15;color:#a78bfa;border:1px solid #7c3aed33' : '#05966915;color:#34d399;border:1px solid #05966933'}">${r.private ? 'خاص' : 'عام'}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectRepo(fullName, branch) {
+      selectedRepo = fullName;
+      if (branch) document.getElementById('branchName').value = branch;
+      renderRepoCards(repos);
+      updateUploadButton();
+    }
+
+    document.getElementById('repoSearch').addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      renderRepoCards(repos.filter(r => r.full_name.toLowerCase().includes(q) || (r.description||'').toLowerCase().includes(q)));
+    });
+
     async function loadRepos() {
       try {
         const res = await fetch('/api/github/repos');
         const data = await res.json();
         if (data.success) {
           repos = data.repos;
-          const select = document.getElementById('repoSelect');
-          repos.forEach(repo => {
-            const opt = document.createElement('option');
-            opt.value = repo.full_name;
-            opt.textContent = `${repo.full_name} ${repo.private ? '(خاص)' : '(عام)'}`;
-            select.appendChild(opt);
-          });
+          renderRepoCards(repos);
           document.getElementById('repoLoading').style.display = 'none';
           document.getElementById('repoList').style.display = 'block';
+          if (preselectedRepo) {
+            const match = repos.find(r => r.full_name === preselectedRepo);
+            if (match) selectRepo(match.full_name, match.default_branch);
+          }
         }
       } catch (err) {
-        document.getElementById('repoLoading').innerHTML = '<p style="color:#f85149;">فشل تحميل المستودعات</p>';
+        document.getElementById('repoLoading').innerHTML = '<p style="color:#fca5a5;">فشل تحميل المستودعات</p>';
       }
     }
 
-    // Repo select change
-    document.getElementById('repoSelect').addEventListener('change', function() {
-      selectedRepo = this.value;
-      // Auto set branch from repo data
-      const repo = repos.find(r => r.full_name === this.value);
-      if (repo && repo.default_branch) {
-        document.getElementById('branchName').value = repo.default_branch;
-      }
-      updateUploadButton();
-    });
-
-    // Create new repo
     async function createRepo() {
       const name = document.getElementById('newRepoName').value.trim();
       if (!name) {
-        document.getElementById('createRepoError').textContent = 'اسم المستودع مطلوب';
-        document.getElementById('createRepoError').style.display = 'block';
+        showError('createRepoError', 'اسم المستودع مطلوب');
         return;
       }
-
       const btn = document.getElementById('createRepoBtn');
       const spinner = document.getElementById('createRepoSpinner');
       const btnText = document.getElementById('createRepoBtnText');
-      const errorMsg = document.getElementById('createRepoError');
-      const successMsg = document.getElementById('createRepoSuccess');
-
-      btn.disabled = true;
-      btnText.style.display = 'none';
-      spinner.style.display = 'block';
-      errorMsg.style.display = 'none';
-      successMsg.style.display = 'none';
+      btn.disabled = true; btnText.style.display = 'none'; spinner.style.display = 'block';
+      hideMsg('createRepoError'); hideMsg('createRepoSuccess');
 
       try {
         const res = await fetch('/api/github/create-repo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            description: document.getElementById('newRepoDesc').value.trim(),
-            isPrivate: document.getElementById('newRepoPrivate').checked
-          })
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ name, description: document.getElementById('newRepoDesc').value.trim(), isPrivate: document.getElementById('newRepoPrivate').checked })
         });
         const data = await res.json();
         if (data.success) {
           selectedRepo = data.repo.full_name;
-          successMsg.innerHTML = `تم إنشاء المستودع <a href="https://github.com/${data.repo.full_name}" target="_blank">${data.repo.full_name}</a> بنجاح!`;
-          successMsg.style.display = 'block';
-
-          // Add to existing repos dropdown
-          const opt = document.createElement('option');
-          opt.value = data.repo.full_name;
-          opt.textContent = `${data.repo.full_name} ${data.repo.private ? '(خاص)' : '(عام)'}`;
-          document.getElementById('repoSelect').appendChild(opt);
-          document.getElementById('repoSelect').value = data.repo.full_name;
-
-          if (data.repo.default_branch) {
-            document.getElementById('branchName').value = data.repo.default_branch;
-          }
-          repos.push(data.repo);
+          document.getElementById('createRepoSuccess').innerHTML = 'تم انشاء المستودع <a href="https://github.com/'+data.repo.full_name+'" target="_blank">'+data.repo.full_name+'</a> بنجاح';
+          document.getElementById('createRepoSuccess').style.display = 'block';
+          if (data.repo.default_branch) document.getElementById('branchName').value = data.repo.default_branch;
+          repos.unshift(data.repo);
+          renderRepoCards(repos);
           updateUploadButton();
         } else {
-          errorMsg.textContent = data.message;
-          errorMsg.style.display = 'block';
+          showError('createRepoError', data.message);
         }
       } catch (err) {
-        errorMsg.textContent = 'حدث خطأ أثناء إنشاء المستودع';
-        errorMsg.style.display = 'block';
+        showError('createRepoError', 'حدث خطأ اثناء انشاء المستودع');
       }
-
-      btn.disabled = false;
-      btnText.style.display = 'inline';
-      spinner.style.display = 'none';
+      btn.disabled = false; btnText.style.display = 'inline'; spinner.style.display = 'none';
     }
 
     // Drop zone
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
-
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      if (files.length > 0) handleFile(files[0]);
-    });
-
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
-    });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+    fileInput.addEventListener('change', () => { if(fileInput.files.length) handleFile(fileInput.files[0]); });
 
     function handleFile(file) {
-      if (!file.name.endsWith('.zip')) {
-        document.getElementById('uploadError').textContent = 'يجب أن يكون الملف بصيغة ZIP';
-        document.getElementById('uploadError').style.display = 'block';
-        return;
-      }
+      if (!file.name.endsWith('.zip')) { showError('uploadError','يجب ان يكون الملف بصيغة ZIP'); return; }
       selectedFile = file;
-      document.getElementById('fileName').textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-      document.getElementById('uploadError').style.display = 'none';
+      document.getElementById('fileName').textContent = file.name + ' (' + (file.size/1024/1024).toFixed(2) + ' MB)';
+      hideMsg('uploadError');
       updateUploadButton();
     }
 
-    function updateUploadButton() {
-      const btn = document.getElementById('uploadBtn');
-      btn.disabled = !(selectedRepo && selectedFile);
-    }
+    function updateUploadButton() { document.getElementById('uploadBtn').disabled = !(selectedRepo && selectedFile); }
 
-    // Upload
     async function uploadZip() {
       if (!selectedRepo || !selectedFile) return;
-
       const btn = document.getElementById('uploadBtn');
       const spinner = document.getElementById('uploadSpinner');
       const btnText = document.getElementById('uploadBtnText');
-      const errorMsg = document.getElementById('uploadError');
-      const successMsg = document.getElementById('uploadSuccess');
-      const progressContainer = document.getElementById('progressContainer');
-      const progressFill = document.getElementById('progressFill');
-      const progressText = document.getElementById('progressText');
-
-      btn.disabled = true;
-      btnText.style.display = 'none';
-      spinner.style.display = 'block';
-      errorMsg.style.display = 'none';
-      successMsg.style.display = 'none';
-      progressContainer.style.display = 'block';
-      progressFill.style.width = '10%';
-      progressText.textContent = 'جاري رفع الملف وفك الضغط...';
+      btn.disabled = true; btnText.style.display = 'none'; spinner.style.display = 'block';
+      hideMsg('uploadError'); hideMsg('uploadSuccess');
+      const pc = document.getElementById('progressContainer');
+      const pf = document.getElementById('progressFill');
+      const pt = document.getElementById('progressText');
+      pc.style.display = 'block'; pf.style.width = '10%'; pt.textContent = 'جاري رفع الملف وفك الضغط...';
 
       const formData = new FormData();
       formData.append('zipfile', selectedFile);
@@ -566,53 +358,34 @@
       formData.append('branch', document.getElementById('branchName').value.trim() || 'main');
       formData.append('commitMessage', document.getElementById('commitMessage').value.trim() || 'Upload via git-zip');
 
-      // Simulate progress
       let progress = 10;
-      const progressInterval = setInterval(() => {
-        if (progress < 85) {
-          progress += Math.random() * 8;
-          progressFill.style.width = progress + '%';
-          if (progress > 30) progressText.textContent = 'جاري نشر الملفات على GitHub...';
-          if (progress > 60) progressText.textContent = 'جاري إنشاء الـ Commit...';
-        }
+      const iv = setInterval(() => {
+        if (progress < 85) { progress += Math.random()*8; pf.style.width = progress+'%'; if(progress>30)pt.textContent='جاري نشر الملفات على GitHub...'; if(progress>60)pt.textContent='جاري انشاء الـ Commit...'; }
       }, 800);
 
       try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await res.json();
-
-        clearInterval(progressInterval);
-        progressFill.style.width = '100%';
-
+        clearInterval(iv); pf.style.width = '100%';
         if (data.success) {
-          progressText.textContent = 'تم بنجاح!';
-          successMsg.innerHTML = `
-            تم رفع <strong>${data.filesCount}</strong> ملف بنجاح إلى 
-            <a href="https://github.com/${selectedRepo}" target="_blank">${selectedRepo}</a>
-            <br>SHA: <code style="background:#0d1117;padding:2px 8px;border-radius:4px;font-size:0.85rem;color:#79b8ff;">${data.commitSha ? data.commitSha.substring(0, 7) : ''}</code>
-          `;
-          successMsg.style.display = 'block';
+          pt.textContent = 'تم بنجاح';
+          const s = document.getElementById('uploadSuccess');
+          s.innerHTML = 'تم رفع <strong>'+data.filesCount+'</strong> ملف بنجاح الى <a href="https://github.com/'+selectedRepo+'" target="_blank">'+selectedRepo+'</a><br><span style="color:#52525b;font-size:0.8rem">SHA: '+((data.commitSha||'').substring(0,7))+'</span>';
+          s.style.display = 'block';
         } else {
-          progressContainer.style.display = 'none';
-          errorMsg.textContent = data.message;
-          errorMsg.style.display = 'block';
+          pc.style.display = 'none';
+          showError('uploadError', data.message);
         }
       } catch (err) {
-        clearInterval(progressInterval);
-        progressContainer.style.display = 'none';
-        errorMsg.textContent = 'حدث خطأ أثناء الرفع، حاول مرة أخرى';
-        errorMsg.style.display = 'block';
+        clearInterval(iv); pc.style.display = 'none';
+        showError('uploadError', 'حدث خطأ اثناء الرفع');
       }
-
-      btn.disabled = false;
-      btnText.style.display = 'inline';
-      spinner.style.display = 'none';
+      btn.disabled = false; btnText.style.display = 'inline'; spinner.style.display = 'none';
     }
 
-    // Init
+    function showError(id, msg) { const el = document.getElementById(id); el.querySelector('span').textContent = msg; el.style.display = 'flex'; }
+    function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
+
     loadRepos();
   </script>
 </body>
