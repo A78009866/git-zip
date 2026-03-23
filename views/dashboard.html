@@ -7,50 +7,61 @@
   <link rel="icon" href="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh}
-    .navbar{background:#09090b;border-bottom:1px solid #18181b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#e4e4e7;min-height:100vh}
+    .navbar{background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
     .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     .nav-brand img{width:32px;height:32px;border-radius:8px}
     .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
-    .nav-brand h1 span{color:#3b82f6}
+    .nav-brand h1 span{color:#71717a}
     .nav-actions{display:flex;align-items:center;gap:16px}
-    .user-pill{display:flex;align-items:center;gap:10px;background:#18181b;border:1px solid #27272a;border-radius:100px;padding:5px 16px 5px 6px}
+    .user-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:5px 16px 5px 6px;cursor:pointer;transition:all .2s;position:relative}
+    .user-pill:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.14)}
     .user-pill img{width:28px;height:28px;border-radius:50%}
     .user-pill span{color:#a1a1aa;font-size:0.85rem;font-weight:500}
-    .btn-logout{background:transparent;border:1px solid #27272a;color:#71717a;padding:8px 16px;border-radius:8px;font-size:0.8rem;cursor:pointer;transition:all .2s;text-decoration:none;font-weight:500}
-    .btn-logout:hover{border-color:#3f3f46;color:#a1a1aa}
+    .user-pill .chevron-icon{width:14px;height:14px;stroke:#52525b;transition:transform .2s;margin-right:4px}
+    .user-pill.open .chevron-icon{transform:rotate(180deg)}
+    .account-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:220px;background:rgba(10,10,10,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 20px 50px rgba(0,0,0,0.6);display:none;z-index:100}
+    .account-dropdown.show{display:block}
+    .dropdown-header{padding:12px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+    .dropdown-header img{width:36px;height:36px;border-radius:50%}
+    .dropdown-header-info{display:flex;flex-direction:column}
+    .dropdown-header-info .dh-name{color:#fafafa;font-size:0.9rem;font-weight:600}
+    .dropdown-header-info .dh-user{color:#52525b;font-size:0.78rem}
+    .dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#a1a1aa;font-size:0.85rem;text-decoration:none;transition:all .15s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
+    .dropdown-item:hover{background:rgba(255,255,255,0.06);color:#fafafa}
+    .dropdown-item svg{width:18px;height:18px;flex-shrink:0}
+    .dropdown-divider{height:1px;background:rgba(255,255,255,0.06);margin:4px 0}
+    .dropdown-item.logout{color:#f87171}
+    .dropdown-item.logout:hover{background:rgba(248,113,113,0.08)}
     .container{max-width:960px;margin:0 auto;padding:32px 24px}
-    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
     .page-header h2{font-size:1.5rem;color:#fafafa;font-weight:700}
-    .btn-upload{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#3b82f6;color:#fff;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .25s;border:none;cursor:pointer}
-    .btn-upload:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 8px 20px rgba(59,130,246,0.25)}
+    .btn-upload{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.06);color:#fafafa;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .25s;border:1px solid rgba(255,255,255,0.1);cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    .btn-upload:hover{background:rgba(255,255,255,0.12);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.18)}
     .btn-upload svg{width:18px;height:18px}
-    /* Stats */
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px}
     @media(max-width:640px){.stats{grid-template-columns:1fr}}
-    .stat-card{background:#111113;border:1px solid #1c1c1f;border-radius:14px;padding:24px}
+    .stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
     .stat-card .stat-label{color:#52525b;font-size:0.8rem;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:6px}
     .stat-card .stat-label svg{width:16px;height:16px;stroke:#52525b}
     .stat-card .stat-value{color:#fafafa;font-size:1.6rem;font-weight:700}
-    /* Repos */
-    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
     .section-header h3{color:#a1a1aa;font-size:0.9rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-    .search-box{display:flex;align-items:center;gap:8px;background:#111113;border:1px solid #27272a;border-radius:8px;padding:8px 14px;width:260px}
+    .search-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 14px;width:260px;max-width:100%}
     .search-box svg{width:16px;height:16px;stroke:#52525b;flex-shrink:0}
     .search-box input{background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;width:100%}
     .search-box input::placeholder{color:#3f3f46}
     .repos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
     @media(max-width:700px){.repos-grid{grid-template-columns:1fr}}
-    .repo-card{background:#111113;border:1px solid #1c1c1f;border-radius:14px;padding:22px;transition:all .25s;cursor:pointer;position:relative;overflow:hidden}
-    .repo-card:hover{border-color:#27272a;transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.3)}
-    .repo-card.selected{border-color:#3b82f6;box-shadow:0 0 0 1px #3b82f6}
+    .repo-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:22px;transition:all .25s;cursor:pointer;position:relative;overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+    .repo-card:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.4)}
     .repo-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
     .repo-name{display:flex;align-items:center;gap:8px}
-    .repo-name svg{width:18px;height:18px;stroke:#3b82f6;flex-shrink:0}
+    .repo-name svg{width:18px;height:18px;flex-shrink:0}
     .repo-name h4{color:#fafafa;font-size:0.95rem;font-weight:600}
     .repo-badge{padding:3px 10px;border-radius:100px;font-size:0.7rem;font-weight:600}
-    .badge-private{background:#7c3aed15;color:#a78bfa;border:1px solid #7c3aed33}
-    .badge-public{background:#05966915;color:#34d399;border:1px solid #05966933}
+    .badge-private{background:rgba(124,58,237,0.08);color:#a78bfa;border:1px solid rgba(124,58,237,0.2)}
+    .badge-public{background:rgba(5,150,105,0.08);color:#34d399;border:1px solid rgba(5,150,105,0.2)}
     .repo-desc{color:#52525b;font-size:0.82rem;line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .repo-meta{display:flex;align-items:center;gap:16px}
     .meta-item{display:flex;align-items:center;gap:5px;color:#3f3f46;font-size:0.75rem}
@@ -59,36 +70,52 @@
     .repo-link{position:absolute;top:22px;left:22px;color:#3f3f46;transition:color .2s}
     .repo-link:hover{color:#a1a1aa}
     .repo-link svg{width:16px;height:16px}
-    /* Loading */
     #loading{text-align:center;padding:60px;color:#52525b}
-    .spinner{width:36px;height:36px;border:3px solid #18181b;border-top:3px solid #3b82f6;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
+    .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.06);border-top:3px solid #a1a1aa;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
     @keyframes spin{to{transform:rotate(360deg)}}
     .empty-state{text-align:center;padding:60px 20px;color:#3f3f46}
     .empty-state svg{width:48px;height:48px;stroke:#27272a;margin-bottom:16px}
     .empty-state p{font-size:0.9rem}
+    .dropdown-overlay{position:fixed;inset:0;z-index:49;display:none}
+    .dropdown-overlay.show{display:block}
   </style>
 </head>
 <body>
+  <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeDropdown()"></div>
   <nav class="navbar">
     <a href="/dashboard" class="nav-brand">
       <img src="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg" alt="git-zip">
       <h1>git<span>-zip</span></h1>
     </a>
     <div class="nav-actions">
-      <div class="user-pill" id="userPill" style="display:none">
+      <div class="user-pill" id="userPill" onclick="toggleDropdown(event)">
         <img id="userAvatar" src="" alt="">
         <span id="userName"></span>
+        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+        <div class="account-dropdown" id="accountDropdown">
+          <div class="dropdown-header">
+            <img id="dropdownAvatar" src="" alt="">
+            <div class="dropdown-header-info">
+              <span class="dh-name" id="dropdownName"></span>
+              <span class="dh-user" id="dropdownUser"></span>
+            </div>
+          </div>
+          <a href="#" id="githubProfileLink" target="_blank" class="dropdown-item" onclick="event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            الانتقال الى GitHub
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="/api/logout" class="dropdown-item logout" onclick="event.stopPropagation();localStorage.removeItem('gitzip_user');">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+            تسجيل الخروج
+          </a>
+        </div>
       </div>
-      <a href="/api/logout" class="btn-logout">تسجيل خروج</a>
     </div>
   </nav>
 
   <div class="container">
-    <div id="loading">
-      <div class="spinner"></div>
-      <p>جاري التحميل...</p>
-    </div>
-
+    <div id="loading"><div class="spinner"></div><p>جاري التحميل...</p></div>
     <div id="content" style="display:none">
       <div class="page-header">
         <h2>لوحة التحكم</h2>
@@ -139,85 +166,104 @@
   </div>
 
   <script>
-    const langColors = {JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',CSS:'#563d7c',HTML:'#e34c26',Shell:'#89e051',C:'#555555','C++':'#f34b7d','C#':'#178600',Swift:'#F05138',Kotlin:'#A97BFF',Dart:'#00B4AB',Vue:'#41b883',Svelte:'#ff3e00'};
-    let allRepos = [];
+    const GH_ICON='<svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+    const GH_ICON_SM='<svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none;width:16px;height:16px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+    const langColors={JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',CSS:'#563d7c',HTML:'#e34c26',Shell:'#89e051',C:'#555555','C++':'#f34b7d','C#':'#178600',Swift:'#F05138',Kotlin:'#A97BFF',Dart:'#00B4AB',Vue:'#41b883',Svelte:'#ff3e00'};
+    let allRepos=[];
 
-    function timeAgo(dateStr) {
-      const diff = Date.now() - new Date(dateStr).getTime();
-      const mins = Math.floor(diff / 60000);
-      if (mins < 60) return mins + ' دقيقة';
-      const hrs = Math.floor(mins / 60);
-      if (hrs < 24) return hrs + ' ساعة';
-      const days = Math.floor(hrs / 24);
-      if (days < 30) return days + ' يوم';
-      return Math.floor(days / 30) + ' شهر';
+    const cachedUser=JSON.parse(localStorage.getItem('gitzip_user')||'null');
+    if(cachedUser){
+      applyUserData(cachedUser);
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').style.display='block';
     }
 
-    function renderRepos(repos) {
-      const container = document.getElementById('reposContainer');
-      const empty = document.getElementById('emptyState');
-      if (repos.length === 0) {
-        container.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-      empty.style.display = 'none';
-      container.innerHTML = repos.map(r => `
+    function applyUserData(d){
+      document.getElementById('userAvatar').src=d.avatar;
+      document.getElementById('userName').textContent='@'+d.username;
+      document.getElementById('userPill').style.display='flex';
+      document.getElementById('dropdownAvatar').src=d.avatar;
+      document.getElementById('dropdownName').textContent=d.name||d.username;
+      document.getElementById('dropdownUser').textContent='@'+d.username;
+      document.getElementById('githubProfileLink').href='https://github.com/'+d.username;
+    }
+
+    function toggleDropdown(e){
+      e.stopPropagation();
+      const dd=document.getElementById('accountDropdown'),pill=document.getElementById('userPill'),ov=document.getElementById('dropdownOverlay');
+      const isOpen=dd.classList.contains('show');
+      dd.classList.toggle('show',!isOpen);
+      pill.classList.toggle('open',!isOpen);
+      ov.classList.toggle('show',!isOpen);
+    }
+    function closeDropdown(){
+      document.getElementById('accountDropdown').classList.remove('show');
+      document.getElementById('userPill').classList.remove('open');
+      document.getElementById('dropdownOverlay').classList.remove('show');
+    }
+
+    function timeAgo(dateStr){
+      const diff=Date.now()-new Date(dateStr).getTime();
+      const mins=Math.floor(diff/60000);
+      if(mins<60) return mins+' دقيقة';
+      const hrs=Math.floor(mins/60);
+      if(hrs<24) return hrs+' ساعة';
+      const days=Math.floor(hrs/24);
+      if(days<30) return days+' يوم';
+      return Math.floor(days/30)+' شهر';
+    }
+
+    function renderRepos(repos){
+      const container=document.getElementById('reposContainer');
+      const empty=document.getElementById('emptyState');
+      if(!repos.length){container.innerHTML='';empty.style.display='block';return;}
+      empty.style.display='none';
+      container.innerHTML=repos.map(r=>`
         <div class="repo-card" onclick="window.location.href='/upload?repo=${encodeURIComponent(r.full_name)}'">
-          <a href="${r.html_url}" target="_blank" class="repo-link" onclick="event.stopPropagation()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-          </a>
+          <a href="${r.html_url}" target="_blank" class="repo-link" onclick="event.stopPropagation()">${GH_ICON_SM}</a>
           <div class="repo-top">
-            <div class="repo-name">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-              <h4>${r.name}</h4>
-            </div>
-            <span class="repo-badge ${r.private ? 'badge-private' : 'badge-public'}">${r.private ? 'خاص' : 'عام'}</span>
+            <div class="repo-name">${GH_ICON}<h4>${r.name}</h4></div>
+            <span class="repo-badge ${r.private?'badge-private':'badge-public'}">${r.private?'خاص':'عام'}</span>
           </div>
-          <p class="repo-desc">${r.description || 'بدون وصف'}</p>
+          <p class="repo-desc">${r.description||'بدون وصف'}</p>
           <div class="repo-meta">
-            ${r.language ? `<div class="meta-item"><span class="lang-dot" style="background:${langColors[r.language] || '#71717a'}"></span>${r.language}</div>` : ''}
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>
-              ${r.stargazers_count}
-            </div>
-            <div class="meta-item">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              ${timeAgo(r.updated_at)}
-            </div>
+            ${r.language?`<div class="meta-item"><span class="lang-dot" style="background:${langColors[r.language]||'#71717a'}"></span>${r.language}</div>`:''}
+            <div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>${r.stargazers_count}</div>
+            <div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${timeAgo(r.updated_at)}</div>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
-    document.getElementById('searchInput').addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      renderRepos(allRepos.filter(r => r.name.toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q)));
+    document.getElementById('searchInput').addEventListener('input',function(){
+      const q=this.value.toLowerCase();
+      renderRepos(allRepos.filter(r=>r.name.toLowerCase().includes(q)||(r.description||'').toLowerCase().includes(q)));
     });
 
-    async function init() {
-      try {
-        const [meRes, reposRes] = await Promise.all([
-          fetch('/api/me').then(r => r.json()),
-          fetch('/api/github/repos').then(r => r.json())
+    async function init(){
+      try{
+        const[meRes,reposRes]=await Promise.all([
+          fetch('/api/me').then(r=>r.json()),
+          fetch('/api/github/repos').then(r=>r.json())
         ]);
-
-        document.getElementById('userAvatar').src = meRes.avatar;
-        document.getElementById('userName').textContent = '@' + meRes.username;
-        document.getElementById('userPill').style.display = 'flex';
-
-        if (reposRes.success) {
-          allRepos = reposRes.repos;
-          document.getElementById('repoCount').textContent = allRepos.length;
-          document.getElementById('privateCount').textContent = allRepos.filter(r => r.private).length;
-          document.getElementById('publicCount').textContent = allRepos.filter(r => !r.private).length;
+        localStorage.setItem('gitzip_user',JSON.stringify(meRes));
+        applyUserData(meRes);
+        if(reposRes.success){
+          allRepos=reposRes.repos;
+          document.getElementById('repoCount').textContent=allRepos.length;
+          document.getElementById('privateCount').textContent=allRepos.filter(r=>r.private).length;
+          document.getElementById('publicCount').textContent=allRepos.filter(r=>!r.private).length;
           renderRepos(allRepos);
         }
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-      } catch (err) {
-        window.location.href = '/';
+        document.getElementById('loading').style.display='none';
+        document.getElementById('content').style.display='block';
+      }catch(err){
+        if(cachedUser){
+          document.getElementById('loading').style.display='none';
+          document.getElementById('content').style.display='block';
+        } else {
+          localStorage.removeItem('gitzip_user');
+          window.location.href='/';
+        }
       }
     }
     init();

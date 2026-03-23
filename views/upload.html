@@ -7,101 +7,141 @@
   <link rel="icon" href="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh}
-    .navbar{background:#09090b;border-bottom:1px solid #18181b;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#e4e4e7;min-height:100vh}
+    .navbar{background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
     .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     .nav-brand img{width:32px;height:32px;border-radius:8px}
     .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
-    .nav-brand h1 span{color:#3b82f6}
+    .nav-brand h1 span{color:#71717a}
+    .nav-actions{display:flex;align-items:center;gap:16px}
     .nav-back{display:flex;align-items:center;gap:6px;color:#71717a;text-decoration:none;font-size:0.85rem;transition:color .2s}
     .nav-back:hover{color:#a1a1aa}
     .nav-back svg{width:18px;height:18px}
+    .user-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:5px 16px 5px 6px;cursor:pointer;transition:all .2s;position:relative}
+    .user-pill:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.14)}
+    .user-pill img{width:28px;height:28px;border-radius:50%}
+    .user-pill span{color:#a1a1aa;font-size:0.85rem;font-weight:500}
+    .user-pill .chevron-icon{width:14px;height:14px;stroke:#52525b;transition:transform .2s;margin-right:4px}
+    .user-pill.open .chevron-icon{transform:rotate(180deg)}
+    .account-dropdown{position:absolute;top:calc(100% + 8px);left:0;min-width:220px;background:rgba(10,10,10,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:8px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 20px 50px rgba(0,0,0,0.6);display:none;z-index:100}
+    .account-dropdown.show{display:block}
+    .dropdown-header{padding:12px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:4px;display:flex;align-items:center;gap:10px}
+    .dropdown-header img{width:36px;height:36px;border-radius:50%}
+    .dropdown-header-info{display:flex;flex-direction:column}
+    .dropdown-header-info .dh-name{color:#fafafa;font-size:0.9rem;font-weight:600}
+    .dropdown-header-info .dh-user{color:#52525b;font-size:0.78rem}
+    .dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:#a1a1aa;font-size:0.85rem;text-decoration:none;transition:all .15s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit}
+    .dropdown-item:hover{background:rgba(255,255,255,0.06);color:#fafafa}
+    .dropdown-item svg{width:18px;height:18px;flex-shrink:0}
+    .dropdown-divider{height:1px;background:rgba(255,255,255,0.06);margin:4px 0}
+    .dropdown-item.logout{color:#f87171}
+    .dropdown-item.logout:hover{background:rgba(248,113,113,0.08)}
+    .dropdown-overlay{position:fixed;inset:0;z-index:49;display:none}
+    .dropdown-overlay.show{display:block}
     .container{max-width:700px;margin:0 auto;padding:32px 24px}
     .page-title{font-size:1.5rem;color:#fafafa;font-weight:700;margin-bottom:32px;display:flex;align-items:center;gap:10px}
-    .page-title svg{width:24px;height:24px;stroke:#3b82f6}
-    /* Cards */
-    .card{background:#111113;border:1px solid #1c1c1f;border-radius:16px;padding:28px;margin-bottom:20px}
+    .page-title svg{width:24px;height:24px;stroke:#a1a1aa}
+    .card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px;margin-bottom:20px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
     .card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-    .card-header .step-num{width:28px;height:28px;border-radius:8px;background:#3b82f615;color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+    .card-header .step-num{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.06);color:#a1a1aa;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
     .card-header h3{color:#fafafa;font-size:1.05rem;font-weight:600}
     .card-desc{color:#52525b;font-size:0.85rem;margin-bottom:20px;margin-right:38px}
-    /* Tabs */
-    .tabs{display:flex;gap:0;margin-bottom:20px;background:#09090b;border-radius:10px;padding:4px;border:1px solid #1c1c1f}
+    .tabs{display:flex;gap:0;margin-bottom:20px;background:rgba(0,0,0,0.4);border-radius:10px;padding:4px;border:1px solid rgba(255,255,255,0.06)}
     .tab{flex:1;padding:10px 16px;background:none;border:none;color:#52525b;font-size:0.85rem;cursor:pointer;border-radius:8px;transition:all .2s;font-weight:500}
-    .tab.active{background:#18181b;color:#fafafa}
+    .tab.active{background:rgba(255,255,255,0.06);color:#fafafa}
     .tab:hover:not(.active){color:#71717a}
     .tab-content{display:none}
     .tab-content.active{display:block}
-    /* Form */
     .form-group{margin-bottom:18px}
     label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
-    select,input[type="text"]{width:100%;padding:11px 14px;background:#09090b;border:1px solid #27272a;border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+    select,input[type="text"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
     select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2352525b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:34px}
-    select:focus,input:focus{border-color:#3b82f6}
+    select:focus,input:focus{border-color:rgba(255,255,255,0.2)}
     .checkbox-group{display:flex;align-items:center;gap:8px;margin-bottom:18px}
-    .checkbox-group input[type="checkbox"]{accent-color:#3b82f6;width:16px;height:16px}
+    .checkbox-group input[type="checkbox"]{accent-color:#a1a1aa;width:16px;height:16px}
     .checkbox-group label{margin-bottom:0;font-size:0.85rem}
-    /* Repo cards in select */
-    .repo-select-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#09090b;border:1px solid #27272a;border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:8px}
-    .repo-select-card:hover{border-color:#3f3f46}
-    .repo-select-card.selected{border-color:#3b82f6;background:#3b82f608}
-    .repo-select-card .rsc-icon{width:36px;height:36px;background:#18181b;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .repo-select-card .rsc-icon svg{width:18px;height:18px;stroke:#3b82f6}
+    .repo-select-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:8px}
+    .repo-select-card:hover{border-color:rgba(255,255,255,0.14)}
+    .repo-select-card.selected{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.04)}
+    .repo-select-card .rsc-icon{width:36px;height:36px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .repo-select-card .rsc-icon svg{width:18px;height:18px}
     .repo-select-card .rsc-info h4{color:#fafafa;font-size:0.88rem;font-weight:600;margin-bottom:2px}
     .repo-select-card .rsc-info p{color:#52525b;font-size:0.75rem}
     .repo-select-card .rsc-badge{padding:2px 8px;border-radius:100px;font-size:0.65rem;font-weight:600;margin-right:auto}
     .repos-scroll{max-height:300px;overflow-y:auto;padding-left:4px}
     .repos-scroll::-webkit-scrollbar{width:4px}
     .repos-scroll::-webkit-scrollbar-track{background:transparent}
-    .repos-scroll::-webkit-scrollbar-thumb{background:#27272a;border-radius:4px}
-    .search-mini{display:flex;align-items:center;gap:8px;background:#09090b;border:1px solid #27272a;border-radius:10px;padding:10px 14px;margin-bottom:12px}
+    .repos-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+    .search-mini{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;margin-bottom:12px}
     .search-mini svg{width:16px;height:16px;stroke:#52525b;flex-shrink:0}
     .search-mini input{background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;width:100%}
     .search-mini input::placeholder{color:#3f3f46}
-    /* Drop zone */
-    .drop-zone{border:2px dashed #27272a;border-radius:16px;padding:48px 20px;text-align:center;cursor:pointer;transition:all .3s;background:#0a0a0c}
-    .drop-zone:hover,.drop-zone.dragover{border-color:#3b82f6;background:#3b82f605}
-    .drop-zone-icon{width:56px;height:56px;margin:0 auto 16px;background:#18181b;border-radius:16px;display:flex;align-items:center;justify-content:center}
-    .drop-zone-icon svg{width:26px;height:26px;stroke:#3b82f6}
+    .drop-zone{border:2px dashed rgba(255,255,255,0.1);border-radius:16px;padding:48px 20px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(0,0,0,0.2)}
+    .drop-zone:hover,.drop-zone.dragover{border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.02)}
+    .drop-zone-icon{width:56px;height:56px;margin:0 auto 16px;background:rgba(255,255,255,0.04);border-radius:16px;display:flex;align-items:center;justify-content:center}
+    .drop-zone-icon svg{width:26px;height:26px;stroke:#a1a1aa}
     .drop-zone p{color:#52525b;font-size:0.9rem}
-    .drop-zone .file-name{color:#3b82f6;font-weight:600;margin-top:8px;font-size:0.9rem}
+    .drop-zone .file-name{color:#fafafa;font-weight:600;margin-top:8px;font-size:0.9rem}
     .file-input{display:none}
-    /* Buttons */
     .btn{padding:12px 24px;border:none;border-radius:10px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all .25s;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-primary{background:#3b82f6;color:#fff}
-    .btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+    .btn-primary{background:rgba(255,255,255,0.08);color:#fafafa;border:1px solid rgba(255,255,255,0.12)}
+    .btn-primary:hover{background:rgba(255,255,255,0.14);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}
     .btn-primary:disabled{opacity:0.35;cursor:not-allowed;transform:none}
-    .btn-success{background:#059669;color:#fff}
-    .btn-success:hover{background:#047857}
+    .btn-success{background:rgba(5,150,105,0.15);color:#34d399;border:1px solid rgba(5,150,105,0.25)}
+    .btn-success:hover{background:rgba(5,150,105,0.25)}
     .btn-success:disabled{opacity:0.35;cursor:not-allowed;transform:none}
     .btn svg{width:18px;height:18px}
-    /* Messages */
-    .error-msg{background:#7f1d1d20;border:1px solid #7f1d1d44;color:#fca5a5;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;display:none;align-items:center;gap:8px}
+    .error-msg{background:rgba(127,29,29,0.12);border:1px solid rgba(127,29,29,0.25);color:#fca5a5;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:0.85rem;display:none;align-items:center;gap:8px}
     .error-msg svg{width:18px;height:18px;flex-shrink:0}
-    .success-msg{background:#05966920;border:1px solid #05966944;color:#6ee7b7;padding:14px 18px;border-radius:12px;margin-bottom:16px;font-size:0.88rem;display:none;line-height:1.7}
-    .success-msg a{color:#3b82f6;text-decoration:none}
+    .success-msg{background:rgba(5,150,105,0.12);border:1px solid rgba(5,150,105,0.25);color:#6ee7b7;padding:14px 18px;border-radius:12px;margin-bottom:16px;font-size:0.88rem;display:none;line-height:1.7}
+    .success-msg a{color:#fafafa;text-decoration:none}
     .success-msg a:hover{text-decoration:underline}
-    /* Progress */
     .progress-container{display:none;margin-bottom:18px}
-    .progress-bar{background:#18181b;border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px}
-    .progress-fill{background:linear-gradient(90deg,#3b82f6,#60a5fa);height:100%;width:0%;border-radius:8px;transition:width .5s ease}
+    .progress-bar{background:rgba(255,255,255,0.04);border-radius:8px;height:6px;overflow:hidden;margin-bottom:8px}
+    .progress-fill{background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.4));height:100%;width:0%;border-radius:8px;transition:width .5s ease}
     .progress-text{color:#52525b;font-size:0.8rem;text-align:center}
     .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid #fff;border-radius:50%;animation:spin .6s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
     .repo-loading{text-align:center;padding:24px;color:#52525b;font-size:0.85rem}
-    .repo-loading .spinner{display:block;margin:0 auto 10px;border-color:#27272a;border-top-color:#3b82f6}
+    .repo-loading .spinner{display:block;margin:0 auto 10px;border-color:rgba(255,255,255,0.06);border-top-color:#a1a1aa}
   </style>
 </head>
 <body>
+  <div class="dropdown-overlay" id="dropdownOverlay" onclick="closeDropdown()"></div>
   <nav class="navbar">
     <a href="/dashboard" class="nav-brand">
       <img src="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg" alt="git-zip">
       <h1>git<span>-zip</span></h1>
     </a>
-    <a href="/dashboard" class="nav-back">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-      لوحة التحكم
-    </a>
+    <div class="nav-actions">
+      <a href="/dashboard" class="nav-back">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+        لوحة التحكم
+      </a>
+      <div class="user-pill" id="userPill" onclick="toggleDropdown(event)">
+        <img id="userAvatar" src="" alt="">
+        <span id="userName"></span>
+        <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+        <div class="account-dropdown" id="accountDropdown">
+          <div class="dropdown-header">
+            <img id="dropdownAvatar" src="" alt="">
+            <div class="dropdown-header-info">
+              <span class="dh-name" id="dropdownName"></span>
+              <span class="dh-user" id="dropdownUser"></span>
+            </div>
+          </div>
+          <a href="#" id="githubProfileLink" target="_blank" class="dropdown-item" onclick="event.stopPropagation()">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            الانتقال الى GitHub
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="/api/logout" class="dropdown-item logout" onclick="event.stopPropagation();localStorage.removeItem('gitzip_user');">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+            تسجيل الخروج
+          </a>
+        </div>
+      </div>
+    </div>
   </nav>
 
   <div class="container">
@@ -211,7 +251,7 @@
       </div>
 
       <button class="btn btn-primary" id="uploadBtn" onclick="uploadZip()" disabled style="margin-top:16px">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        <svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
         <span id="uploadBtnText">رفع ونشر على GitHub</span>
         <div class="spinner" id="uploadSpinner"></div>
       </button>
@@ -219,11 +259,45 @@
   </div>
 
   <script>
+    const GH_ICON='<svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
     let selectedRepo = '';
     let selectedFile = null;
     let repos = [];
 
-    // Check URL param for pre-selected repo
+    // Session persistence
+    const cachedUser=JSON.parse(localStorage.getItem('gitzip_user')||'null');
+    if(cachedUser) applyUserData(cachedUser);
+
+    function applyUserData(d){
+      document.getElementById('userAvatar').src=d.avatar;
+      document.getElementById('userName').textContent='@'+d.username;
+      document.getElementById('userPill').style.display='flex';
+      document.getElementById('dropdownAvatar').src=d.avatar;
+      document.getElementById('dropdownName').textContent=d.name||d.username;
+      document.getElementById('dropdownUser').textContent='@'+d.username;
+      document.getElementById('githubProfileLink').href='https://github.com/'+d.username;
+    }
+
+    function toggleDropdown(e){
+      e.stopPropagation();
+      const dd=document.getElementById('accountDropdown'),pill=document.getElementById('userPill'),ov=document.getElementById('dropdownOverlay');
+      const isOpen=dd.classList.contains('show');
+      dd.classList.toggle('show',!isOpen);
+      pill.classList.toggle('open',!isOpen);
+      ov.classList.toggle('show',!isOpen);
+    }
+    function closeDropdown(){
+      document.getElementById('accountDropdown').classList.remove('show');
+      document.getElementById('userPill').classList.remove('open');
+      document.getElementById('dropdownOverlay').classList.remove('show');
+    }
+
+    // Also fetch fresh user data
+    fetch('/api/me').then(r=>r.json()).then(d=>{
+      localStorage.setItem('gitzip_user',JSON.stringify(d));
+      applyUserData(d);
+    }).catch(()=>{});
+
     const urlParams = new URLSearchParams(window.location.search);
     const preselectedRepo = urlParams.get('repo');
 
@@ -244,14 +318,12 @@
       const container = document.getElementById('reposScroll');
       container.innerHTML = list.map(r => `
         <div class="repo-select-card ${selectedRepo === r.full_name ? 'selected' : ''}" onclick="selectRepo('${r.full_name}','${r.default_branch}')">
-          <div class="rsc-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-          </div>
+          <div class="rsc-icon">${GH_ICON}</div>
           <div class="rsc-info">
             <h4>${r.full_name}</h4>
             <p>${r.description || 'بدون وصف'}</p>
           </div>
-          <span class="rsc-badge" style="background:${r.private ? '#7c3aed15;color:#a78bfa;border:1px solid #7c3aed33' : '#05966915;color:#34d399;border:1px solid #05966933'}">${r.private ? 'خاص' : 'عام'}</span>
+          <span class="rsc-badge" style="background:${r.private ? 'rgba(124,58,237,0.08);color:#a78bfa;border:1px solid rgba(124,58,237,0.2)' : 'rgba(5,150,105,0.08);color:#34d399;border:1px solid rgba(5,150,105,0.2)'}">${r.private ? 'خاص' : 'عام'}</span>
         </div>
       `).join('');
     }
@@ -289,10 +361,7 @@
 
     async function createRepo() {
       const name = document.getElementById('newRepoName').value.trim();
-      if (!name) {
-        showError('createRepoError', 'اسم المستودع مطلوب');
-        return;
-      }
+      if (!name) { showError('createRepoError', 'اسم المستودع مطلوب'); return; }
       const btn = document.getElementById('createRepoBtn');
       const spinner = document.getElementById('createRepoSpinner');
       const btnText = document.getElementById('createRepoBtnText');

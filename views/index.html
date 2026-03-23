@@ -7,25 +7,25 @@
   <link rel="icon" href="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#09090b;color:#e4e4e7;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-x:hidden}
-    .bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000;color:#e4e4e7;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow-x:hidden}
+    .bg-glow{position:fixed;top:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(255,255,255,0.03) 0%,transparent 70%);pointer-events:none;z-index:0}
     .hero{text-align:center;max-width:620px;padding:40px 24px;position:relative;z-index:1}
-    .logo{width:88px;height:88px;border-radius:22px;margin-bottom:28px;box-shadow:0 0 50px rgba(59,130,246,0.2)}
+    .logo{width:88px;height:88px;border-radius:22px;margin-bottom:28px;box-shadow:0 0 50px rgba(255,255,255,0.06)}
     h1{font-size:3.2rem;color:#fafafa;margin-bottom:6px;letter-spacing:-1.5px;font-weight:700}
-    h1 span{color:#3b82f6}
-    .tagline{font-size:1.1rem;color:#71717a;margin-bottom:44px;line-height:1.8}
-    .btn-github{display:inline-flex;align-items:center;gap:12px;padding:16px 40px;background:#fafafa;color:#09090b;border-radius:12px;text-decoration:none;font-size:1.05rem;font-weight:600;transition:all .25s ease;border:none;cursor:pointer}
-    .btn-github:hover{background:#e4e4e7;transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.4)}
+    h1 span{color:#71717a}
+    .tagline{font-size:1.1rem;color:#52525b;margin-bottom:44px;line-height:1.8}
+    .btn-github{display:inline-flex;align-items:center;gap:12px;padding:16px 40px;background:rgba(255,255,255,0.05);color:#fafafa;border-radius:12px;text-decoration:none;font-size:1.05rem;font-weight:600;transition:all .25s ease;border:1px solid rgba(255,255,255,0.1);cursor:pointer;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .btn-github:hover{background:rgba(255,255,255,0.1);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.6);border-color:rgba(255,255,255,0.18)}
     .btn-github svg{width:22px;height:22px}
     .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px;width:100%;max-width:780px;padding:0 24px;position:relative;z-index:1}
     @media(max-width:640px){.features{grid-template-columns:1fr}}
-    .feat{background:#111113;border:1px solid #1c1c1f;border-radius:14px;padding:28px 24px;text-align:center;transition:all .3s ease}
-    .feat:hover{border-color:#27272a;transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.3)}
-    .feat-icon{width:44px;height:44px;margin:0 auto 16px;background:#18181b;border-radius:12px;display:flex;align-items:center;justify-content:center}
-    .feat-icon svg{width:22px;height:22px;color:#3b82f6;stroke:#3b82f6}
+    .feat{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:28px 24px;text-align:center;transition:all .3s ease;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+    .feat:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.4)}
+    .feat-icon{width:44px;height:44px;margin:0 auto 16px;background:rgba(255,255,255,0.04);border-radius:12px;display:flex;align-items:center;justify-content:center}
+    .feat-icon svg{width:22px;height:22px;color:#a1a1aa;stroke:#a1a1aa}
     .feat h3{color:#fafafa;font-size:1rem;margin-bottom:6px;font-weight:600}
     .feat p{color:#52525b;font-size:0.85rem;line-height:1.5}
-    .error-banner{background:#7f1d1d33;border:1px solid #7f1d1d66;color:#fca5a5;padding:12px 20px;border-radius:10px;margin-bottom:24px;font-size:0.9rem;display:none}
+    .error-banner{background:rgba(127,29,29,0.15);border:1px solid rgba(127,29,29,0.3);color:#fca5a5;padding:12px 20px;border-radius:10px;margin-bottom:24px;font-size:0.9rem;display:none}
     footer{margin-top:64px;padding:24px;color:#3f3f46;font-size:0.8rem;position:relative;z-index:1}
   </style>
 </head>
@@ -51,7 +51,7 @@
     </div>
     <div class="feat">
       <div class="feat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-3.065a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L5.25 9.879" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757"/></svg>
+        <svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
       </div>
       <h3>تكامل GitHub</h3>
       <p>سجل بحسابك على GitHub وادفع الملفات مباشرة</p>
@@ -65,7 +65,6 @@
     </div>
   </div>
   <footer>git-zip &copy; 2025</footer>
-
   <script>
     if (window.location.search.includes('error=')) {
       document.getElementById('errorBanner').style.display = 'block';
