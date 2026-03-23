@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ربط GitHub - git-zip</title>
+  <link rel="icon" href="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background: #111;
+      border-bottom: 1px solid #1e1e1e;
+      padding: 14px 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .navbar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .navbar img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+    .navbar h1 {
+      font-size: 1.3rem;
+      color: #fff;
+    }
+    .navbar h1 span { color: #58a6ff; }
+    .content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 520px;
+    }
+    .card h2 {
+      color: #fff;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+    .card > p {
+      color: #8b949e;
+      margin-bottom: 24px;
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+    .steps {
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .steps h3 {
+      color: #c9d1d9;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+    .steps ol {
+      padding-right: 20px;
+      color: #8b949e;
+      font-size: 0.9rem;
+      line-height: 2;
+    }
+    .steps a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    .steps a:hover { text-decoration: underline; }
+    .steps code {
+      background: #1a1a2e;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: #79b8ff;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #c9d1d9;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s;
+      font-family: monospace;
+    }
+    input:focus {
+      border-color: #58a6ff;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-success {
+      background: #238636;
+      color: #fff;
+    }
+    .btn-success:hover {
+      background: #2ea043;
+    }
+    .btn-success:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .error-msg {
+      background: #f8514926;
+      border: 1px solid #f8514966;
+      color: #f85149;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .success-msg {
+      background: #23863633;
+      border: 1px solid #23863666;
+      color: #3fb950;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #58a6ff;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { text-decoration: underline; }
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #fff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard">
+      <img src="https://res.cloudinary.com/duixjs8az/image/upload/v1765127215/post_media/1765127215249-trimer.jpg" alt="git-zip">
+      <h1>git<span>-zip</span></h1>
+    </a>
+  </nav>
+
+  <div class="content">
+    <div class="card">
+      <h2>ربط حساب GitHub</h2>
+      <p>تحتاج إلى إنشاء Personal Access Token من GitHub لربط حسابك.</p>
+
+      <div class="steps">
+        <h3>خطوات إنشاء Token:</h3>
+        <ol>
+          <li>اذهب إلى <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Settings → Tokens</a></li>
+          <li>اختر <code>Generate new token (classic)</code></li>
+          <li>اكتب اسم للـ Token مثل <code>git-zip</code></li>
+          <li>فعّل الصلاحيات: <code>repo</code> (كامل)</li>
+          <li>اضغط <code>Generate token</code></li>
+          <li>انسخ الـ Token والصقه هنا</li>
+        </ol>
+      </div>
+
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="success-msg" id="successMsg"></div>
+
+      <form id="connectForm">
+        <div class="form-group">
+          <label>GitHub Personal Access Token</label>
+          <input type="text" id="token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        </div>
+        <button type="submit" class="btn btn-success" id="submitBtn">
+          <span id="btnText">ربط الحساب</span>
+          <div class="spinner" id="spinner"></div>
+        </button>
+      </form>
+      <a href="/dashboard" class="back-link">العودة إلى لوحة التحكم</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('connectForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      spinner.style.display = 'block';
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/connect-github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: document.getElementById('token').value.trim()
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          successMsg.textContent = `تم الربط بنجاح مع حساب @${data.githubUser}`;
+          successMsg.style.display = 'block';
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
+        } else {
+          errorMsg.textContent = data.message;
+          errorMsg.style.display = 'block';
+        }
+      } catch (err) {
+        errorMsg.textContent = 'حدث خطأ، حاول مرة أخرى';
+        errorMsg.style.display = 'block';
+      }
+
+      btn.disabled = false;
+      btnText.style.display = 'inline';
+      spinner.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
