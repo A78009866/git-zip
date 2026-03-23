@@ -4,7 +4,7 @@ const multer = require('multer');
 const AdmZip = require('adm-zip');
 const axios = require('axios');
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 
@@ -25,9 +25,12 @@ app.use(session({
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Multer config for ZIP uploads
+// Multer config for ZIP uploads (use /tmp on Vercel)
+const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
 const upload = multer({
-  dest: 'uploads/',
+  dest: uploadDir,
   limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/zip' || file.mimetype === 'application/x-zip-compressed' || file.originalname.endsWith('.zip')) {
@@ -88,7 +91,7 @@ app.post('/api/register', async (req, res) => {
     if (Object.values(users).find(u => u.username === username)) {
       return res.json({ success: false, message: 'Username already taken' });
     }
-    const id = uuidv4();
+    const id = crypto.randomUUID();
     const hash = await bcrypt.hash(password, 10);
     users[id] = { id, username, email, password: hash, githubToken: null, githubUser: null };
     req.session.userId = id;
@@ -215,7 +218,7 @@ app.post('/api/upload', requireAuth, requireGitHub, upload.single('zipfile'), as
 
     // Extract ZIP
     const zip = new AdmZip(req.file.path);
-    extractPath = path.join(__dirname, 'uploads', uuidv4());
+    extractPath = path.join(uploadDir, crypto.randomUUID());
     zip.extractAllTo(extractPath, true);
 
     // Get all files recursively
@@ -363,7 +366,12 @@ app.post('/api/disconnect-github', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`git-zip server running on http://localhost:${PORT}`);
-});
+// Start server (skip listen on Vercel)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`git-zip server running on http://localhost:${PORT}`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;

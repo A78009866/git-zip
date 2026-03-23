@@ -1,0 +1,26 @@
+{
+  "name": "git-zip",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "github",
+    "zip",
+    "upload",
+    "deploy"
+  ],
+  "author": "git-zip",
+  "license": "ISC",
+  "description": "Upload ZIP files and push them to GitHub repositories",
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "axios": "^1.13.6",
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "multer": "^2.1.1"
+  }
+}
