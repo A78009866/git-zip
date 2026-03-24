@@ -36,8 +36,8 @@
     .container{max-width:960px;margin:0 auto;padding:32px 24px}
     .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
     .page-header h2{font-size:1.5rem;color:#fafafa;font-weight:700}
-    .btn-upload{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.06);color:#fafafa;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .25s;border:1px solid rgba(255,255,255,0.1);cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-    .btn-upload:hover{background:rgba(255,255,255,0.12);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.18)}
+    .btn-upload{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(0,200,80,0.15);color:#4ade80;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .3s;border:1px solid rgba(0,200,80,0.3);cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    .btn-upload:hover{background:rgba(0,200,80,0.25);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,200,80,0.15);border-color:rgba(0,200,80,0.45)}
     .btn-upload svg{width:18px;height:18px}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px}
     @media(max-width:640px){.stats{grid-template-columns:1fr}}
@@ -78,6 +78,7 @@
     .empty-state p{font-size:0.9rem}
     .dropdown-overlay{position:fixed;inset:0;z-index:49;display:none}
     .dropdown-overlay.show{display:block}
+    footer{text-align:center;padding:32px 24px;color:#3f3f46;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.04);margin-top:48px}
   </style>
 </head>
 <body>
@@ -240,13 +241,18 @@
     });
 
     async function apiFetch(url, opts){
-      const res = await fetch(url, opts);
-      if(res.status===401){
-        localStorage.removeItem('gitzip_user');
-        window.location.href='/';
-        throw new Error('auth');
+      try {
+        const res = await fetch(url, opts);
+        if(res.status===401){
+          localStorage.removeItem('gitzip_user');
+          window.location.href='/';
+          throw new Error('auth');
+        }
+        return res.json();
+      } catch(e) {
+        if(e.message==='auth') throw e;
+        throw new Error('network');
       }
-      return res.json();
     }
 
     async function init(){
@@ -268,16 +274,17 @@
         document.getElementById('content').style.display='block';
       }catch(err){
         if(err.message==='auth') return;
+        // On network/other errors, show cached data instead of redirecting
         if(cachedUser){
           document.getElementById('loading').style.display='none';
           document.getElementById('content').style.display='block';
         } else {
-          localStorage.removeItem('gitzip_user');
-          window.location.href='/';
+          document.getElementById('loading').innerHTML='<p style="color:#fca5a5">فشل الاتصال بالخادم. <a href="/" style="color:#4ade80">اعادة المحاولة</a></p>';
         }
       }
     }
     init();
   </script>
+  <footer>&copy; Aite.studio 2026</footer>
 </body>
 </html>

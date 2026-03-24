@@ -45,6 +45,10 @@ const upload = multer({
 // Auth middleware
 function requireAuth(req, res, next) {
   if (req.session && req.session.githubToken) return next();
+  // For AJAX/fetch requests, return 401 JSON instead of redirect
+  if (req.headers['x-requested-with'] === 'XMLHttpRequest' || req.headers.accept?.includes('application/json')) {
+    return res.status(401).json({ success: false, message: 'Not authenticated', authRequired: true });
+  }
   return res.redirect('/');
 }
 
