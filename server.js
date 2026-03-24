@@ -206,17 +206,19 @@ app.get('/api/github/repos', requireApiAuth, async (req, res) => {
     const response = await axios.get('https://api.github.com/user/repos?per_page=100&sort=updated', {
       headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
     });
-    const repos = response.data.map(r => ({
-      name: r.name,
-      full_name: r.full_name,
-      private: r.private,
-      default_branch: r.default_branch,
-      description: r.description || '',
-      language: r.language || '',
-      updated_at: r.updated_at,
-      stargazers_count: r.stargazers_count,
-      html_url: r.html_url
-    }));
+    const repos = response.data
+      .filter(r => r.permissions && r.permissions.push)
+      .map(r => ({
+        name: r.name,
+        full_name: r.full_name,
+        private: r.private,
+        default_branch: r.default_branch,
+        description: r.description || '',
+        language: r.language || '',
+        updated_at: r.updated_at,
+        stargazers_count: r.stargazers_count,
+        html_url: r.html_url
+      }));
     res.json({ success: true, repos });
   } catch (err) {
     res.json({ success: false, message: 'Failed to fetch repos' });
@@ -236,6 +238,9 @@ app.post('/api/github/create-repo', requireApiAuth, async (req, res) => {
     }, {
       headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
     });
+
+    // Wait for GitHub to fully initialize the repo (auto_init creates an initial commit)
+    await new Promise(r => setTimeout(r, 2000));
 
     res.json({
       success: true,
@@ -257,6 +262,34 @@ app.post('/api/github/create-repo', requireApiAuth, async (req, res) => {
   }
 });
 
+// ─── Helper: retry with delay ───
+async function retryWithDelay(fn, retries = 3, delayMs = 2000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+}
+
+// ─── Helper: check write access to repo ───
+async function checkRepoWriteAccess(repoFullName, headers) {
+  try {
+    const res = await axios.get(`https://api.github.com/repos/${repoFullName}`, { headers });
+    if (!res.data.permissions || !res.data.permissions.push) {
+      return { ok: false, message: 'You do not have write access to this repository' };
+    }
+    return { ok: true, data: res.data };
+  } catch (err) {
+    if (err.response?.status === 404) {
+      return { ok: false, message: 'Repository not found or you do not have access' };
+    }
+    return { ok: false, message: 'Could not verify repository access' };
+  }
+}
+
 // ─── Upload ZIP & Push to GitHub ───
 app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, res) => {
   let extractPath = null;
@@ -268,6 +301,13 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
 
     const branchName = branch || 'main';
     const message = commitMessage || 'Upload via git-zip';
+
+    const token = req.session.githubToken;
+    const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
+
+    // Verify write access before doing any work
+    const access = await checkRepoWriteAccess(repoFullName, headers);
+    if (!access.ok) return res.json({ success: false, message: access.message });
 
     const zip = new AdmZip(req.file.path);
     extractPath = path.join(uploadDir, crypto.randomUUID());
@@ -298,10 +338,12 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
 
     if (allFiles.length === 0) return res.json({ success: false, message: 'ZIP file is empty' });
 
-    const token = req.session.githubToken;
-    const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
-
     let latestCommitSha, treeSha;
+
+    // Handle empty repos (no commits yet) — create an initial commit
+    const repoData = access.data;
+    let isEmptyRepo = false;
+
     try {
       const refRes = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${branchName}`, { headers });
       latestCommitSha = refRes.data.object.sha;
@@ -309,8 +351,7 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       treeSha = commitRes.data.tree.sha;
     } catch (err) {
       try {
-        const repoRes = await axios.get(`https://api.github.com/repos/${repoFullName}`, { headers });
-        const defaultBranch = repoRes.data.default_branch;
+        const defaultBranch = repoData.default_branch;
         const defRef = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers });
         latestCommitSha = defRef.data.object.sha;
         const commitRes = await axios.get(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
@@ -319,20 +360,52 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
           await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, { ref: `refs/heads/${branchName}`, sha: latestCommitSha }, { headers });
         }
       } catch (e2) {
-        return res.json({ success: false, message: 'Could not access repository branch' });
+        // Repo might be completely empty (no commits at all)
+        isEmptyRepo = true;
       }
     }
 
+    // Create blobs in parallel batches (5 at a time) for speed
+    const BATCH_SIZE = 5;
     const treeItems = [];
-    for (const file of allFiles) {
-      const content = fs.readFileSync(file.fullPath);
-      const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
-        content: content.toString('base64'), encoding: 'base64'
-      }, { headers });
-      treeItems.push({ path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha });
+    for (let i = 0; i < allFiles.length; i += BATCH_SIZE) {
+      const batch = allFiles.slice(i, i + BATCH_SIZE);
+      const results = await Promise.all(batch.map(async (file) => {
+        const content = fs.readFileSync(file.fullPath);
+        const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
+          content: content.toString('base64'), encoding: 'base64'
+        }, { headers });
+        return { path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha };
+      }));
+      treeItems.push(...results);
     }
 
-    const newTree = await axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { base_tree: treeSha, tree: treeItems }, { headers });
+    let newTreeSha;
+    if (isEmptyRepo) {
+      // For empty repos: create a standalone tree (no base_tree)
+      const newTree = await axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { tree: treeItems }, { headers });
+      newTreeSha = newTree.data.sha;
+
+      // Create the first commit (no parents)
+      const newCommit = await axios.post(`https://api.github.com/repos/${repoFullName}/git/commits`, { message, tree: newTreeSha, parents: [] }, { headers });
+
+      // Create the branch ref
+      try {
+        await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, { ref: `refs/heads/${branchName}`, sha: newCommit.data.sha }, { headers });
+      } catch (refErr) {
+        // If the ref already exists (race condition), update it instead
+        await axios.patch(`https://api.github.com/repos/${repoFullName}/git/refs/heads/${branchName}`, { sha: newCommit.data.sha }, { headers });
+      }
+
+      fs.unlinkSync(req.file.path);
+      fs.rmSync(extractPath, { recursive: true, force: true });
+      return res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: newCommit.data.sha, filesCount: allFiles.length });
+    }
+
+    // For repos with existing commits: use base_tree, with retry for newly created repos
+    const newTree = await retryWithDelay(() =>
+      axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { base_tree: treeSha, tree: treeItems }, { headers })
+    , 3, 2000);
     const newCommit = await axios.post(`https://api.github.com/repos/${repoFullName}/git/commits`, { message, tree: newTree.data.sha, parents: [latestCommitSha] }, { headers });
     await axios.patch(`https://api.github.com/repos/${repoFullName}/git/refs/heads/${branchName}`, { sha: newCommit.data.sha }, { headers });
 
@@ -346,8 +419,23 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       if (extractPath && fs.existsSync(extractPath)) fs.rmSync(extractPath, { recursive: true, force: true });
     } catch (e) {}
-    console.error('Upload error:', err.response?.data || err.message);
-    res.json({ success: false, message: err.response?.data?.message || 'Failed to push to GitHub' });
+
+    const status = err.response?.status;
+    const ghMessage = err.response?.data?.message || '';
+    console.error('Upload error:', { status, message: ghMessage, url: err.config?.url });
+
+    let userMessage = 'Failed to push to GitHub';
+    if (status === 404) {
+      userMessage = 'Repository not found or you do not have write access. Please check your permissions.';
+    } else if (status === 403) {
+      userMessage = ghMessage.includes('rate limit') ? 'GitHub API rate limit reached. Please try again later.' : 'Access denied. Your GitHub token may not have sufficient permissions.';
+    } else if (status === 422) {
+      userMessage = 'Invalid data sent to GitHub. ' + ghMessage;
+    } else if (ghMessage) {
+      userMessage = ghMessage;
+    }
+
+    res.json({ success: false, message: userMessage });
   }
 });
 
