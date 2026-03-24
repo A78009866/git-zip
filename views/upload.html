@@ -150,6 +150,106 @@
     .lock-toggle.private .lock-indicator{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,0.4)}
     @keyframes lockBounce{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
     .lock-icon-wrapper.bounce{animation:lockBounce .35s ease}
+    /* Theme Toggle Switch */
+    .theme-toggle-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;color:#a1a1aa;font-size:0.85rem;cursor:pointer;transition:all .15s;user-select:none}
+    .theme-toggle-item:hover{background:rgba(255,255,255,0.06);color:#fafafa}
+    .theme-toggle-item .toggle-label{display:flex;align-items:center;gap:10px}
+    .theme-toggle-item .toggle-label svg{width:18px;height:18px;flex-shrink:0}
+    .theme-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+    .theme-switch input{opacity:0;width:0;height:0}
+    .theme-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.1);transition:.3s;border-radius:22px;border:1px solid rgba(255,255,255,0.15)}
+    .theme-slider:before{content:'';position:absolute;height:16px;width:16px;right:2px;bottom:2px;background:#a1a1aa;transition:.3s;border-radius:50%}
+    .theme-switch input:checked+.theme-slider{background:rgba(250,204,21,0.2);border-color:rgba(250,204,21,0.4)}
+    .theme-switch input:checked+.theme-slider:before{transform:translateX(-18px);background:#facc15}
+    /* Light Mode */
+    body.light-mode{background:#f5f5f5;color:#1a1a1a}
+    body.light-mode .navbar{background:rgba(255,255,255,0.85);border-bottom:1px solid rgba(0,0,0,0.08)}
+    body.light-mode .nav-brand h1{color:#1a1a1a}
+    body.light-mode .nav-brand h1 span{color:#71717a}
+    body.light-mode .user-pill{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.1)}
+    body.light-mode .user-pill:hover{background:rgba(0,0,0,0.07);border-color:rgba(0,0,0,0.15)}
+    body.light-mode .user-pill span{color:#52525b}
+    body.light-mode .user-pill .chevron-icon{stroke:#71717a}
+    body.light-mode .account-dropdown{background:rgba(255,255,255,0.97);border:1px solid rgba(0,0,0,0.1);box-shadow:0 20px 50px rgba(0,0,0,0.15)}
+    body.light-mode .dropdown-header{border-bottom:1px solid rgba(0,0,0,0.06)}
+    body.light-mode .dropdown-header-info .dh-name{color:#1a1a1a}
+    body.light-mode .dropdown-header-info .dh-user{color:#71717a}
+    body.light-mode .dropdown-item{color:#52525b}
+    body.light-mode .dropdown-item:hover{background:rgba(0,0,0,0.04);color:#1a1a1a}
+    body.light-mode .dropdown-item.logout{color:#dc2626}
+    body.light-mode .dropdown-item.logout:hover{background:rgba(220,38,38,0.06)}
+    body.light-mode .dropdown-divider{background:rgba(0,0,0,0.06)}
+    body.light-mode .theme-toggle-item{color:#52525b}
+    body.light-mode .theme-toggle-item:hover{background:rgba(0,0,0,0.04);color:#1a1a1a}
+    body.light-mode .theme-slider{background:rgba(0,0,0,0.1);border-color:rgba(0,0,0,0.15)}
+    body.light-mode .theme-slider:before{background:#71717a}
+    body.light-mode .page-title{color:#1a1a1a}
+    body.light-mode .page-title svg{stroke:#71717a}
+    body.light-mode .card{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    body.light-mode .card-header h3{color:#1a1a1a}
+    body.light-mode .card-header .step-num{background:rgba(0,0,0,0.06);color:#71717a}
+    body.light-mode .card-desc{color:#71717a}
+    body.light-mode .tabs{background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08)}
+    body.light-mode .tab{color:#a1a1aa}
+    body.light-mode .tab.active{background:rgba(0,0,0,0.06);color:#1a1a1a}
+    body.light-mode .tab:hover:not(.active){color:#71717a}
+    body.light-mode label{color:#52525b}
+    body.light-mode select,body.light-mode input[type="text"],body.light-mode input[type="url"]{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.12);color:#1a1a1a}
+    body.light-mode select:focus,body.light-mode input:focus{border-color:rgba(0,0,0,0.25)}
+    body.light-mode .search-mini{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1)}
+    body.light-mode .search-mini svg{stroke:#71717a}
+    body.light-mode .search-mini input{color:#1a1a1a}
+    body.light-mode .search-mini input::placeholder{color:#a1a1aa}
+    body.light-mode .repo-select-card{background:rgba(255,255,255,0.6);border:2px solid rgba(0,0,0,0.08)}
+    body.light-mode .repo-select-card:hover{border-color:rgba(0,0,0,0.18);background:rgba(255,255,255,0.8)}
+    body.light-mode .repo-select-card .rsc-icon{background:rgba(0,0,0,0.04)}
+    body.light-mode .repo-select-card .rsc-info h4{color:#1a1a1a}
+    body.light-mode .repo-select-card .rsc-info p{color:#71717a}
+    body.light-mode .repo-select-card.selected{border-color:#16a34a;background:rgba(22,163,74,0.04)}
+    body.light-mode .repo-select-card.selected .rsc-info h4{color:#16a34a}
+    body.light-mode .url-field-row{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1)}
+    body.light-mode .url-field-row:focus-within{border-color:rgba(0,0,0,0.25)}
+    body.light-mode .url-field-icon{color:#71717a}
+    body.light-mode .url-inline-input{color:#1a1a1a}
+    body.light-mode .url-inline-input::placeholder{color:#a1a1aa}
+    body.light-mode .url-inline-btn{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.25)}
+    body.light-mode .url-inline-btn:hover{background:rgba(22,163,74,0.18);border-color:rgba(22,163,74,0.35)}
+    body.light-mode .section-divider{color:#a1a1aa}
+    body.light-mode .section-divider::before,body.light-mode .section-divider::after{background:rgba(0,0,0,0.08)}
+    body.light-mode .drop-zone{border-color:rgba(0,0,0,0.15);background:rgba(255,255,255,0.5)}
+    body.light-mode .drop-zone:hover,body.light-mode .drop-zone.dragover{border-color:rgba(0,0,0,0.3);background:rgba(255,255,255,0.8)}
+    body.light-mode .drop-zone-icon{background:rgba(0,0,0,0.04)}
+    body.light-mode .drop-zone-icon svg{stroke:#71717a}
+    body.light-mode .drop-zone p{color:#71717a}
+    body.light-mode .drop-zone .file-name{color:#1a1a1a}
+    body.light-mode .btn-primary{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
+    body.light-mode .btn-primary:hover{background:rgba(22,163,74,0.18);box-shadow:0 8px 20px rgba(22,163,74,0.12)}
+    body.light-mode .btn-success{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
+    body.light-mode .btn-success:hover{background:rgba(22,163,74,0.18)}
+    body.light-mode .error-msg{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2);color:#dc2626}
+    body.light-mode .success-msg{background:rgba(22,163,74,0.06);border-color:rgba(22,163,74,0.2);color:#16a34a}
+    body.light-mode .success-msg a{color:#1a1a1a}
+    body.light-mode .progress-bar{background:rgba(0,0,0,0.06)}
+    body.light-mode .progress-fill{background:linear-gradient(90deg,rgba(22,163,74,0.3),rgba(22,163,74,0.5))}
+    body.light-mode .progress-text{color:#71717a}
+    body.light-mode .spinner{border-color:rgba(0,0,0,0.08);border-top-color:#71717a}
+    body.light-mode .repo-loading{color:#71717a}
+    body.light-mode .selected-repo-banner{background:rgba(22,163,74,0.06);border-color:rgba(22,163,74,0.2)}
+    body.light-mode .selected-repo-banner .srb-icon{background:rgba(22,163,74,0.1)}
+    body.light-mode .selected-repo-banner .srb-icon svg{stroke:#16a34a}
+    body.light-mode .selected-repo-banner .srb-label{color:#16a34a}
+    body.light-mode .selected-repo-banner .srb-name{color:#1a1a1a}
+    body.light-mode .selected-repo-banner .srb-clear{border-color:rgba(0,0,0,0.1);color:#71717a}
+    body.light-mode .selected-repo-banner .srb-clear:hover{border-color:rgba(220,38,38,0.3);color:#dc2626;background:rgba(220,38,38,0.04)}
+    body.light-mode .lock-toggle{background:rgba(255,255,255,0.6);border:2px solid rgba(0,0,0,0.1)}
+    body.light-mode .lock-toggle:hover{border-color:rgba(0,0,0,0.18);background:rgba(255,255,255,0.8)}
+    body.light-mode .lock-toggle.private{border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.04)}
+    body.light-mode .lock-icon-wrapper{background:rgba(22,163,74,0.08)}
+    body.light-mode .lock-toggle.private .lock-icon-wrapper{background:rgba(124,58,237,0.1)}
+    body.light-mode .lock-status{color:#1a1a1a}
+    body.light-mode .lock-hint{color:#71717a}
+    body.light-mode .visibility-label{color:#52525b}
+    body.light-mode footer{color:#a1a1aa;border-top:1px solid rgba(0,0,0,0.06)}
     /* Responsive fixes */
     @media(max-width:600px){
       .navbar{padding:0 16px;height:56px}
@@ -219,6 +319,17 @@
             <svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             الانتقال الى GitHub
           </a>
+          <div class="dropdown-divider"></div>
+          <div class="theme-toggle-item" onclick="event.stopPropagation();toggleTheme()">
+            <div class="toggle-label">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/></svg>
+              الوضع الفاتح
+            </div>
+            <label class="theme-switch" onclick="event.stopPropagation()">
+              <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+              <span class="theme-slider"></span>
+            </label>
+          </div>
           <div class="dropdown-divider"></div>
           <a href="/api/logout" class="dropdown-item logout" onclick="event.stopPropagation();localStorage.removeItem('gitzip_user');">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
@@ -671,6 +782,21 @@
     function hideMsg(id) { document.getElementById(id).style.display = 'none'; }
 
     loadRepos();
+
+    // Theme management
+    function toggleTheme(){
+      const isLight=document.body.classList.toggle('light-mode');
+      localStorage.setItem('gitzip_theme',isLight?'light':'dark');
+      document.getElementById('themeToggle').checked=isLight;
+    }
+    function applyTheme(){
+      const theme=localStorage.getItem('gitzip_theme');
+      if(theme==='light'){
+        document.body.classList.add('light-mode');
+        document.getElementById('themeToggle').checked=true;
+      }
+    }
+    applyTheme();
   </script>
   <footer>&copy; Aite.studio 2026</footer>
 </body>

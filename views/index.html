@@ -27,6 +27,23 @@
     .feat p{color:#52525b;font-size:0.85rem;line-height:1.5}
     .error-banner{background:rgba(127,29,29,0.15);border:1px solid rgba(127,29,29,0.3);color:#fca5a5;padding:12px 20px;border-radius:10px;margin-bottom:24px;font-size:0.9rem;display:none}
     footer{margin-top:64px;padding:24px;color:#3f3f46;font-size:0.8rem;position:relative;z-index:1}
+    /* Light Mode */
+    body.light-mode{background:#f5f5f5;color:#1a1a1a}
+    body.light-mode .bg-glow{background:radial-gradient(circle,rgba(0,0,0,0.03) 0%,transparent 70%)}
+    body.light-mode h1{color:#1a1a1a}
+    body.light-mode h1 span{color:#71717a}
+    body.light-mode .tagline{color:#71717a}
+    body.light-mode .btn-github{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
+    body.light-mode .btn-github:hover{background:rgba(22,163,74,0.18);box-shadow:0 12px 30px rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.4)}
+    body.light-mode .feat{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+    body.light-mode .feat:hover{border-color:rgba(0,0,0,0.15);box-shadow:0 16px 40px rgba(0,0,0,0.08)}
+    body.light-mode .feat-icon{background:rgba(0,0,0,0.04)}
+    body.light-mode .feat-icon svg{color:#71717a;stroke:#71717a}
+    body.light-mode .feat h3{color:#1a1a1a}
+    body.light-mode .feat p{color:#71717a}
+    body.light-mode .error-banner{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2);color:#dc2626}
+    body.light-mode .logo{box-shadow:0 0 50px rgba(0,0,0,0.08)}
+    body.light-mode footer{color:#a1a1aa}
     @media(max-width:600px){
       .hero{padding:32px 18px}
       .logo{width:64px;height:64px;border-radius:16px;margin-bottom:20px}
@@ -81,6 +98,11 @@
     if (window.location.search.includes('error=')) {
       document.getElementById('errorBanner').style.display = 'block';
     }
+    // Apply theme
+    (function(){
+      const theme=localStorage.getItem('gitzip_theme');
+      if(theme==='light') document.body.classList.add('light-mode');
+    })();
   </script>
 </body>
 </html>
