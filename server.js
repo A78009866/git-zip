@@ -364,6 +364,7 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
     // Handle empty repos (no commits yet) — create an initial commit
     const repoData = access.data;
     let isEmptyRepo = false;
+    const defaultBranch = repoData.default_branch || 'main';
 
     try {
       const refRes = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${branchName}`, { headers });
@@ -372,7 +373,6 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       treeSha = commitRes.data.tree.sha;
     } catch (err) {
       try {
-        const defaultBranch = repoData.default_branch;
         const defRef = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers });
         latestCommitSha = defRef.data.object.sha;
         const commitRes = await axios.get(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
@@ -386,18 +386,50 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       }
     }
 
-    // Handle empty repos: initialize with Contents API first
+    // Handle empty repos: Git Data API does NOT work on repos with zero commits.
+    // We MUST create the first commit via Contents API to initialize the git database.
     if (isEmptyRepo) {
+      console.log('Empty repo detected, initializing via Contents API...');
+
+      // Try creating a seed file via Contents API. This is the ONLY way to initialize
+      // an empty repo's git database so that the Git Data API becomes functional.
+      // Use a unique filename to avoid conflicts with previous failed attempts.
+      const seedFileName = `.gitkeep-${Date.now()}`;
+      let seedCreated = false;
+
+      // Try multiple seed file names in case of conflicts
+      for (const fileName of ['.gitkeep', seedFileName, '.gitinit']) {
+        try {
+          await axios.put(`https://api.github.com/repos/${repoFullName}/contents/${fileName}`, {
+            message: 'Initial commit via git-zip',
+            content: Buffer.from('').toString('base64')
+          }, { headers });
+          seedCreated = true;
+          console.log(`Seed file '${fileName}' created successfully`);
+          break;
+        } catch (seedErr) {
+          const seedStatus = seedErr.response?.status;
+          console.log(`Seed file '${fileName}' failed (${seedStatus}): ${seedErr.response?.data?.message || seedErr.message}`);
+          // 422 means file already exists — the repo might already be initialized from a prior attempt
+          if (seedStatus === 422) {
+            seedCreated = true; // Repo already has at least one commit
+            break;
+          }
+          // For other errors, try the next filename
+        }
+      }
+
+      if (!seedCreated) {
+        fs.unlinkSync(req.file.path);
+        fs.rmSync(extractPath, { recursive: true, force: true });
+        return res.json({ success: false, message: 'Failed to initialize empty repository. Please add a README or any file to the repo on GitHub first, then try uploading again.' });
+      }
+
+      // Now poll for the ref to appear — the Contents API commit should have created a branch
       try {
-        await axios.put(`https://api.github.com/repos/${repoFullName}/contents/.gitkeep`, {
-          message: 'Initial commit via git-zip',
-          content: Buffer.from('').toString('base64')
-        }, { headers });
-        // Poll for the ref to appear instead of fixed sleep
-        const defaultBranch = repoData.default_branch || 'main';
         const initRef = await retryWithDelay(() =>
           axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers })
-        , 8, 2000);
+        , 5, 1500);
         latestCommitSha = initRef.data.object.sha;
         const initCommit = await axios.get(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
         treeSha = initCommit.data.tree.sha;
@@ -407,10 +439,36 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
           }, { headers });
         }
         isEmptyRepo = false;
-      } catch (initErr) {
-        console.error('Failed to initialize empty repo, trying direct approach:', initErr.message);
+        console.log('Empty repo initialized successfully, Git Data API should now be available');
+      } catch (refErr) {
+        console.error('Failed to get ref after seed commit:', refErr.response?.data?.message || refErr.message);
+        // Fall back to uploading all files via Contents API
       }
     }
+
+    // ── Fallback: upload via Contents API one-by-one if Git Data API is unavailable ──
+    if (isEmptyRepo) {
+      console.log('Git Data API unavailable, falling back to Contents API for all files...');
+      let lastCommitSha = null;
+      for (const file of allFiles) {
+        try {
+          const content = fs.readFileSync(file.fullPath);
+          const putRes = await axios.put(`https://api.github.com/repos/${repoFullName}/contents/${file.path}`, {
+            message: allFiles.indexOf(file) === 0 ? message : `${message} - ${file.path}`,
+            content: content.toString('base64'),
+            ...(branchName !== defaultBranch && lastCommitSha ? { branch: branchName } : {})
+          }, { headers });
+          lastCommitSha = putRes.data.commit.sha;
+        } catch (fileErr) {
+          console.error(`Contents API upload failed for ${file.path}:`, fileErr.response?.data?.message || fileErr.message);
+        }
+      }
+      fs.unlinkSync(req.file.path);
+      fs.rmSync(extractPath, { recursive: true, force: true });
+      return res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName} (via Contents API)`, commitSha: lastCommitSha, filesCount: allFiles.length });
+    }
+
+    // ── Normal path: Git Data API (repo has at least one commit) ──
 
     // Create blobs in parallel batches (5 at a time) for speed
     const BATCH_SIZE = 5;
@@ -427,31 +485,7 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       treeItems.push(...results);
     }
 
-    let newTreeSha;
-    if (isEmptyRepo) {
-      // For empty repos: create a standalone tree (no base_tree), with retry for propagation delay
-      const newTree = await retryWithDelay(() =>
-        axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { tree: treeItems }, { headers })
-      , 5, 2000);
-      newTreeSha = newTree.data.sha;
-
-      // Create the first commit (no parents)
-      const newCommit = await axios.post(`https://api.github.com/repos/${repoFullName}/git/commits`, { message, tree: newTreeSha, parents: [] }, { headers });
-
-      // Create the branch ref
-      try {
-        await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, { ref: `refs/heads/${branchName}`, sha: newCommit.data.sha }, { headers });
-      } catch (refErr) {
-        // If the ref already exists (race condition), update it instead
-        await axios.patch(`https://api.github.com/repos/${repoFullName}/git/refs/heads/${branchName}`, { sha: newCommit.data.sha }, { headers });
-      }
-
-      fs.unlinkSync(req.file.path);
-      fs.rmSync(extractPath, { recursive: true, force: true });
-      return res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: newCommit.data.sha, filesCount: allFiles.length });
-    }
-
-    // For repos with existing commits: use base_tree, with retry for newly created repos
+    // Create new tree, commit, and update ref
     const newTree = await retryWithDelay(() =>
       axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { base_tree: treeSha, tree: treeItems }, { headers })
     , 3, 2000);
