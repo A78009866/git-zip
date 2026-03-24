@@ -14,9 +14,6 @@
     .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
     .nav-brand h1 span{color:#71717a}
     .nav-actions{display:flex;align-items:center;gap:16px}
-    .nav-back{display:flex;align-items:center;gap:6px;color:#71717a;text-decoration:none;font-size:0.85rem;transition:color .2s}
-    .nav-back:hover{color:#a1a1aa}
-    .nav-back svg{width:18px;height:18px}
     .user-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:5px 16px 5px 6px;cursor:pointer;transition:all .2s;position:relative}
     .user-pill:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.14)}
     .user-pill img{width:28px;height:28px;border-radius:50%}
@@ -115,10 +112,6 @@
       <h1>git<span>-zip</span></h1>
     </a>
     <div class="nav-actions">
-      <a href="/dashboard" class="nav-back">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-        لوحة التحكم
-      </a>
       <div class="user-pill" id="userPill" onclick="toggleDropdown(event)">
         <img id="userAvatar" src="" alt="">
         <span id="userName"></span>
