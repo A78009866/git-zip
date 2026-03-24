@@ -469,33 +469,81 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
     }
 
     // ── Normal path: Git Data API (repo has at least one commit) ──
+    let gitDataSuccess = false;
+    let finalCommitSha = null;
 
-    // Create blobs in parallel batches (5 at a time) for speed
-    const BATCH_SIZE = 5;
-    const treeItems = [];
-    for (let i = 0; i < allFiles.length; i += BATCH_SIZE) {
-      const batch = allFiles.slice(i, i + BATCH_SIZE);
-      const results = await Promise.all(batch.map(async (file) => {
-        const content = fs.readFileSync(file.fullPath);
-        const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
-          content: content.toString('base64'), encoding: 'base64'
-        }, { headers });
-        return { path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha };
-      }));
-      treeItems.push(...results);
+    try {
+      // Create blobs in parallel batches (5 at a time) for speed
+      const BATCH_SIZE = 5;
+      const treeItems = [];
+      for (let i = 0; i < allFiles.length; i += BATCH_SIZE) {
+        const batch = allFiles.slice(i, i + BATCH_SIZE);
+        const results = await Promise.all(batch.map(async (file) => {
+          const content = fs.readFileSync(file.fullPath);
+          const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
+            content: content.toString('base64'), encoding: 'base64'
+          }, { headers });
+          return { path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha };
+        }));
+        treeItems.push(...results);
+      }
+
+      // Create new tree, commit, and update ref
+      const newTree = await retryWithDelay(() =>
+        axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { base_tree: treeSha, tree: treeItems }, { headers })
+      , 3, 2000);
+      const newCommit = await axios.post(`https://api.github.com/repos/${repoFullName}/git/commits`, { message, tree: newTree.data.sha, parents: [latestCommitSha] }, { headers });
+      await axios.patch(`https://api.github.com/repos/${repoFullName}/git/refs/heads/${branchName}`, { sha: newCommit.data.sha }, { headers });
+
+      gitDataSuccess = true;
+      finalCommitSha = newCommit.data.sha;
+    } catch (gitApiErr) {
+      const gitApiStatus = gitApiErr.response?.status;
+      console.warn('Git Data API failed (status ' + gitApiStatus + '), falling back to Contents API...', gitApiErr.response?.data?.message || gitApiErr.message);
+
+      // Fallback: upload files one-by-one via Contents API
+      let lastSha = null;
+      let uploadedCount = 0;
+      for (const file of allFiles) {
+        try {
+          const content = fs.readFileSync(file.fullPath);
+
+          // Check if the file already exists (need its SHA to update it)
+          let existingFileSha;
+          try {
+            const existingRes = await axios.get(`https://api.github.com/repos/${repoFullName}/contents/${file.path}?ref=${branchName}`, { headers });
+            existingFileSha = existingRes.data.sha;
+          } catch (e) {
+            // File doesn't exist yet — that's fine, we'll create it
+          }
+
+          const putRes = await axios.put(`https://api.github.com/repos/${repoFullName}/contents/${file.path}`, {
+            message: uploadedCount === 0 ? message : `${message} - ${file.path}`,
+            content: content.toString('base64'),
+            branch: branchName,
+            ...(existingFileSha ? { sha: existingFileSha } : {})
+          }, { headers });
+          lastSha = putRes.data.commit.sha;
+          uploadedCount++;
+        } catch (fileErr) {
+          console.error(`Contents API upload failed for ${file.path}:`, fileErr.response?.data?.message || fileErr.message);
+        }
+      }
+
+      if (uploadedCount === 0) {
+        // Nothing was uploaded even via fallback — throw original error
+        throw gitApiErr;
+      }
+
+      finalCommitSha = lastSha;
+      gitDataSuccess = true; // Mark as success since Contents API worked
+      console.log(`Fallback succeeded: uploaded ${uploadedCount}/${allFiles.length} files via Contents API`);
     }
-
-    // Create new tree, commit, and update ref
-    const newTree = await retryWithDelay(() =>
-      axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { base_tree: treeSha, tree: treeItems }, { headers })
-    , 3, 2000);
-    const newCommit = await axios.post(`https://api.github.com/repos/${repoFullName}/git/commits`, { message, tree: newTree.data.sha, parents: [latestCommitSha] }, { headers });
-    await axios.patch(`https://api.github.com/repos/${repoFullName}/git/refs/heads/${branchName}`, { sha: newCommit.data.sha }, { headers });
 
     fs.unlinkSync(req.file.path);
     fs.rmSync(extractPath, { recursive: true, force: true });
 
-    res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: newCommit.data.sha, filesCount: allFiles.length });
+    res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: finalCommitSha, filesCount: allFiles.length });
 
   } catch (err) {
     try {
