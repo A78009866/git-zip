@@ -296,7 +296,7 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
   try {
     if (!req.file) return res.json({ success: false, message: 'No file uploaded' });
 
-    const { repoFullName, branch, commitMessage } = req.body;
+    let { repoFullName, branch, commitMessage } = req.body;
     if (!repoFullName) return res.json({ success: false, message: 'Repository is required' });
 
     const branchName = branch || 'main';
@@ -308,6 +308,9 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
     // Verify write access before doing any work
     const access = await checkRepoWriteAccess(repoFullName, headers);
     if (!access.ok) return res.json({ success: false, message: access.message });
+
+    // Use canonical repo name from GitHub API to ensure correct casing
+    repoFullName = access.data.full_name || repoFullName;
 
     const zip = new AdmZip(req.file.path);
     extractPath = path.join(uploadDir, crypto.randomUUID());
@@ -362,6 +365,32 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       } catch (e2) {
         // Repo might be completely empty (no commits at all)
         isEmptyRepo = true;
+      }
+    }
+
+    // Handle empty repos: initialize with Contents API first
+    if (isEmptyRepo) {
+      try {
+        await axios.put(`https://api.github.com/repos/${repoFullName}/contents/.gitkeep`, {
+          message: 'Initial commit via git-zip',
+          content: Buffer.from('').toString('base64')
+        }, { headers });
+        await new Promise(r => setTimeout(r, 2000));
+        const defaultBranch = repoData.default_branch || 'main';
+        const initRef = await retryWithDelay(() =>
+          axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers })
+        , 3, 1500);
+        latestCommitSha = initRef.data.object.sha;
+        const initCommit = await axios.get(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
+        treeSha = initCommit.data.tree.sha;
+        if (branchName !== defaultBranch) {
+          await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, {
+            ref: `refs/heads/${branchName}`, sha: latestCommitSha
+          }, { headers });
+        }
+        isEmptyRepo = false;
+      } catch (initErr) {
+        console.error('Failed to initialize empty repo, trying direct approach:', initErr.message);
       }
     }
 

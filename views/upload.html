@@ -51,18 +51,24 @@
     .tab-content.active{display:block}
     .form-group{margin-bottom:18px}
     label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
-    select,input[type="text"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+    select,input[type="text"],input[type="url"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
     select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2352525b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:34px}
     select:focus,input:focus{border-color:rgba(255,255,255,0.2)}
     .checkbox-group{display:flex;align-items:center;gap:8px;margin-bottom:18px}
     .checkbox-group input[type="checkbox"]{accent-color:#a1a1aa;width:16px;height:16px}
     .checkbox-group label{margin-bottom:0;font-size:0.85rem}
-    .repo-select-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:8px}
-    .repo-select-card:hover{border-color:rgba(255,255,255,0.14)}
-    .repo-select-card.selected{border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.04)}
-    .repo-select-card .rsc-icon{width:36px;height:36px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .repo-select-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;transition:all .25s;margin-bottom:8px;position:relative}
+    .repo-select-card:hover{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.03)}
+    .repo-select-card.selected{border-color:#4ade80;background:rgba(0,200,80,0.06);box-shadow:0 0 20px rgba(0,200,80,0.08)}
+    .repo-select-card.selected .rsc-icon{background:rgba(0,200,80,0.15)}
+    .repo-select-card.selected .rsc-icon svg{fill:#4ade80 !important}
+    .repo-select-card.selected .rsc-info h4{color:#4ade80}
+    .repo-select-card .rsc-check{position:absolute;top:10px;left:10px;width:22px;height:22px;border-radius:50%;background:rgba(0,200,80,0.2);border:2px solid #4ade80;display:none;align-items:center;justify-content:center}
+    .repo-select-card.selected .rsc-check{display:flex}
+    .repo-select-card .rsc-check svg{width:12px;height:12px;stroke:#4ade80;stroke-width:3;fill:none}
+    .repo-select-card .rsc-icon{width:36px;height:36px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .25s}
     .repo-select-card .rsc-icon svg{width:18px;height:18px}
-    .repo-select-card .rsc-info h4{color:#fafafa;font-size:0.88rem;font-weight:600;margin-bottom:2px}
+    .repo-select-card .rsc-info h4{color:#fafafa;font-size:0.88rem;font-weight:600;margin-bottom:2px;transition:color .25s}
     .repo-select-card .rsc-info p{color:#52525b;font-size:0.75rem}
     .repo-select-card .rsc-badge{padding:2px 8px;border-radius:100px;font-size:0.65rem;font-weight:600;margin-right:auto}
     .repos-scroll{max-height:300px;overflow-y:auto;padding-left:4px}
@@ -102,6 +108,21 @@
     .repo-loading{text-align:center;padding:24px;color:#52525b;font-size:0.85rem}
     .repo-loading .spinner{display:block;margin:0 auto 10px;border-color:rgba(255,255,255,0.06);border-top-color:#a1a1aa}
     footer{text-align:center;padding:32px 24px;color:#3f3f46;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.04);margin-top:48px}
+    .selected-repo-banner{display:none;background:rgba(0,200,80,0.08);border:1px solid rgba(0,200,80,0.25);border-radius:12px;padding:14px 18px;margin-bottom:20px;align-items:center;gap:12px;animation:bannerIn .3s ease}
+    .selected-repo-banner.show{display:flex}
+    @keyframes bannerIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .selected-repo-banner .srb-icon{width:40px;height:40px;background:rgba(0,200,80,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .selected-repo-banner .srb-icon svg{width:20px;height:20px;stroke:#4ade80;fill:none}
+    .selected-repo-banner .srb-info{flex:1}
+    .selected-repo-banner .srb-label{color:#4ade80;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px}
+    .selected-repo-banner .srb-name{color:#fafafa;font-size:0.95rem;font-weight:700}
+    .selected-repo-banner .srb-clear{background:none;border:1px solid rgba(255,255,255,0.1);color:#a1a1aa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.78rem;font-weight:500;transition:all .2s;font-family:inherit}
+    .selected-repo-banner .srb-clear:hover{border-color:rgba(248,113,113,0.4);color:#f87171;background:rgba(248,113,113,0.06)}
+    .url-input-group{display:flex;gap:8px;align-items:flex-start}
+    .url-input-group input[type="url"]{flex:1}
+    .url-input-group .btn-use-url{padding:11px 20px;white-space:nowrap;width:auto;font-size:0.85rem}
+    .url-helper{color:#3f3f46;font-size:0.78rem;margin-top:8px;line-height:1.6}
+    .url-helper code{background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.75rem;color:#a1a1aa}
   </style>
 </head>
 <body>
@@ -150,10 +171,22 @@
         <div class="step-num">1</div>
         <h3>اختيار المستودع</h3>
       </div>
-      <p class="card-desc">اختر مستودعا موجودا او انشئ مستودعا جديدا</p>
+      <p class="card-desc">اختر مستودعا موجودا او ادخل رابط مستودع او انشئ مستودعا جديدا</p>
+
+      <div class="selected-repo-banner" id="selectedRepoBanner">
+        <div class="srb-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="srb-info">
+          <div class="srb-label">المستودع المختار</div>
+          <div class="srb-name" id="selectedRepoName"></div>
+        </div>
+        <button class="srb-clear" onclick="clearSelectedRepo()">تغيير</button>
+      </div>
 
       <div class="tabs">
         <button class="tab active" onclick="switchTab('existing')">مستودع موجود</button>
+        <button class="tab" onclick="switchTab('url')">رابط المستودع</button>
         <button class="tab" onclick="switchTab('new')">انشاء مستودع جديد</button>
       </div>
 
@@ -168,6 +201,24 @@
             <input type="text" id="repoSearch" placeholder="بحث في المستودعات...">
           </div>
           <div class="repos-scroll" id="reposScroll"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-url">
+        <div class="form-group">
+          <label>رابط المستودع على GitHub</label>
+          <div class="url-input-group">
+            <input type="url" id="repoUrlInput" placeholder="https://github.com/owner/repo" dir="ltr">
+            <button class="btn btn-success btn-use-url" onclick="useRepoUrl()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
+              استخدام
+            </button>
+          </div>
+          <p class="url-helper">الصق رابط المستودع مثل: <code>https://github.com/owner/repo</code></p>
+        </div>
+        <div class="error-msg" id="urlError">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          <span></span>
         </div>
       </div>
 
@@ -254,6 +305,7 @@
 
   <script>
     const GH_ICON='<svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+    const CHECK_ICON='<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>';
     let selectedRepo = '';
     let selectedFile = null;
     let repos = [];
@@ -317,17 +369,63 @@
       if (tab === 'existing') {
         document.querySelectorAll('.tab')[0].classList.add('active');
         document.getElementById('tab-existing').classList.add('active');
-      } else {
+      } else if (tab === 'url') {
         document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tab-url').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[2].classList.add('active');
         document.getElementById('tab-new').classList.add('active');
       }
       updateUploadButton();
     }
 
+    function updateSelectedBanner() {
+      const banner = document.getElementById('selectedRepoBanner');
+      const nameEl = document.getElementById('selectedRepoName');
+      if (selectedRepo) {
+        nameEl.textContent = selectedRepo;
+        banner.classList.add('show');
+      } else {
+        banner.classList.remove('show');
+      }
+    }
+
+    function clearSelectedRepo() {
+      selectedRepo = '';
+      document.getElementById('repoUrlInput').value = '';
+      renderRepoCards(repos);
+      updateSelectedBanner();
+      updateUploadButton();
+    }
+
+    function parseGitHubUrl(url) {
+      url = url.trim().replace(/\/+$/, '').replace(/\.git$/, '');
+      const match = url.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\s]+)\/([^\/\s?#]+)/i);
+      if (match) return match[1] + '/' + match[2];
+      return null;
+    }
+
+    function useRepoUrl() {
+      const input = document.getElementById('repoUrlInput');
+      const url = input.value.trim();
+      hideMsg('urlError');
+      if (!url) { showError('urlError', 'الرجاء ادخال رابط المستودع'); return; }
+      const repoFullName = parseGitHubUrl(url);
+      if (!repoFullName) { showError('urlError', 'الرابط غير صالح. يجب ان يكون بصيغة: https://github.com/owner/repo'); return; }
+      selectedRepo = repoFullName;
+      updateSelectedBanner();
+      updateUploadButton();
+    }
+
+    document.getElementById('repoUrlInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); useRepoUrl(); }
+    });
+
     function renderRepoCards(list) {
       const container = document.getElementById('reposScroll');
       container.innerHTML = list.map(r => `
         <div class="repo-select-card ${selectedRepo === r.full_name ? 'selected' : ''}" onclick="selectRepo('${r.full_name}','${r.default_branch}')">
+          <div class="rsc-check">${CHECK_ICON}</div>
           <div class="rsc-icon">${GH_ICON}</div>
           <div class="rsc-info">
             <h4>${r.full_name}</h4>
@@ -342,6 +440,7 @@
       selectedRepo = fullName;
       if (branch) document.getElementById('branchName').value = branch;
       renderRepoCards(repos);
+      updateSelectedBanner();
       updateUploadButton();
     }
 
@@ -392,6 +491,7 @@
           if (data.repo.default_branch) document.getElementById('branchName').value = data.repo.default_branch;
           repos.unshift(data.repo);
           renderRepoCards(repos);
+          updateSelectedBanner();
           updateUploadButton();
         } else {
           showError('createRepoError', data.message);
