@@ -15,16 +15,73 @@ const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '';
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
+// Encryption key for persistent auth cookie (survives server restarts & Vercel cold starts)
+const AUTH_SECRET = process.env.SESSION_SECRET || 'git-zip-secret-key-change-me';
+const CRYPTO_KEY = crypto.scryptSync(AUTH_SECRET, 'gitzip-salt', 32);
+
+function encryptAuth(data) {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv('aes-256-cbc', CRYPTO_KEY, iv);
+  let encrypted = cipher.update(JSON.stringify(data), 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return iv.toString('hex') + '.' + encrypted;
+}
+
+function decryptAuth(text) {
+  try {
+    const parts = text.split('.');
+    if (parts.length !== 2) return null;
+    const iv = Buffer.from(parts[0], 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', CRYPTO_KEY, iv);
+    let decrypted = decipher.update(parts[1], 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return JSON.parse(decrypted);
+  } catch {
+    return null;
+  }
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Cookie parser (no extra package needed)
+app.use((req, res, next) => {
+  req.cookies = {};
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    cookieHeader.split(';').forEach(c => {
+      const [name, ...rest] = c.trim().split('=');
+      if (name && rest.length) req.cookies[name.trim()] = decodeURIComponent(rest.join('='));
+    });
+  }
+  next();
+});
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'git-zip-secret-key-change-me',
+  secret: AUTH_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
+
+// Restore session from persistent auth cookie if session was lost (Vercel cold start / server restart)
+app.use((req, res, next) => {
+  if (!req.session || !req.session.githubToken) {
+    const authCookie = req.cookies.gitzip_auth;
+    if (authCookie) {
+      const auth = decryptAuth(authCookie);
+      if (auth && auth.githubToken) {
+        req.session.githubToken = auth.githubToken;
+        req.session.githubUser = auth.githubUser;
+        req.session.githubAvatar = auth.githubAvatar;
+        req.session.githubName = auth.githubName;
+      }
+    }
+  }
+  next();
+});
 
 // Multer config
 const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
@@ -112,6 +169,14 @@ app.get('/auth/github/callback', async (req, res) => {
     req.session.githubAvatar = userRes.data.avatar_url;
     req.session.githubName = userRes.data.name || userRes.data.login;
 
+    // Set persistent encrypted auth cookie (survives server restarts)
+    res.cookie('gitzip_auth', encryptAuth({
+      githubToken: accessToken,
+      githubUser: userRes.data.login,
+      githubAvatar: userRes.data.avatar_url,
+      githubName: userRes.data.name || userRes.data.login
+    }), { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' });
+
     res.redirect('/dashboard');
   } catch (err) {
     console.error('OAuth error:', err.message);
@@ -120,8 +185,11 @@ app.get('/auth/github/callback', async (req, res) => {
 });
 
 app.get('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/');
+  req.session.destroy(() => {
+    res.clearCookie('gitzip_auth');
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+  });
 });
 
 app.get('/api/me', requireApiAuth, (req, res) => {
