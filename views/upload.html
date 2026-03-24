@@ -118,11 +118,81 @@
     .selected-repo-banner .srb-name{color:#fafafa;font-size:0.95rem;font-weight:700}
     .selected-repo-banner .srb-clear{background:none;border:1px solid rgba(255,255,255,0.1);color:#a1a1aa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.78rem;font-weight:500;transition:all .2s;font-family:inherit}
     .selected-repo-banner .srb-clear:hover{border-color:rgba(248,113,113,0.4);color:#f87171;background:rgba(248,113,113,0.06)}
-    .url-input-group{display:flex;gap:8px;align-items:flex-start}
-    .url-input-group input[type="url"]{flex:1}
-    .url-input-group .btn-use-url{padding:11px 20px;white-space:nowrap;width:auto;font-size:0.85rem}
-    .url-helper{color:#3f3f46;font-size:0.78rem;margin-top:8px;line-height:1.6}
-    .url-helper code{background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.75rem;color:#a1a1aa}
+    .url-field-inline{margin-bottom:0}
+    .url-field-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:4px 4px 4px 14px;transition:border-color .2s}
+    .url-field-row:focus-within{border-color:rgba(255,255,255,0.2)}
+    .url-field-icon{flex-shrink:0;color:#52525b}
+    .url-inline-input{flex:1;background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;padding:8px 4px;font-family:inherit;min-width:0}
+    .url-inline-input::placeholder{color:#3f3f46}
+    .url-inline-btn{display:flex;align-items:center;gap:5px;padding:8px 16px;background:rgba(0,200,80,0.12);color:#4ade80;border:1px solid rgba(0,200,80,0.25);border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap;flex-shrink:0}
+    .url-inline-btn:hover{background:rgba(0,200,80,0.2);border-color:rgba(0,200,80,0.4)}
+    .section-divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:#3f3f46;font-size:0.78rem}
+    .section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.06)}
+    .section-divider span{white-space:nowrap}
+    /* Lock Toggle */
+    .visibility-toggle{margin-bottom:18px}
+    .visibility-label{display:block;margin-bottom:8px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
+    .lock-toggle{display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.08);border-radius:12px;cursor:pointer;transition:all .3s;user-select:none;position:relative;overflow:hidden}
+    .lock-toggle:hover{border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.02)}
+    .lock-toggle.private{border-color:rgba(124,58,237,0.3);background:rgba(124,58,237,0.05)}
+    .lock-toggle.private:hover{border-color:rgba(124,58,237,0.45)}
+    .lock-icon-wrapper{width:40px;height:40px;border-radius:10px;background:rgba(5,150,105,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .35s ease;position:relative}
+    .lock-toggle.private .lock-icon-wrapper{background:rgba(124,58,237,0.15)}
+    .lock-svg{width:20px;height:20px;position:absolute;transition:all .35s ease}
+    .lock-svg.active{opacity:1;transform:scale(1)}
+    .lock-svg:not(.active){opacity:0;transform:scale(0.5)}
+    #lockIconUnlocked{stroke:#34d399}
+    #lockIconLocked{stroke:#a78bfa}
+    .lock-text{flex:1;display:flex;flex-direction:column;gap:2px}
+    .lock-status{font-size:0.9rem;font-weight:600;color:#fafafa;transition:color .3s}
+    .lock-hint{font-size:0.75rem;color:#52525b;transition:color .3s}
+    .lock-indicator{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0;transition:all .35s ease;box-shadow:0 0 8px rgba(52,211,153,0.4)}
+    .lock-toggle.private .lock-indicator{background:#a78bfa;box-shadow:0 0 8px rgba(167,139,250,0.4)}
+    @keyframes lockBounce{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+    .lock-icon-wrapper.bounce{animation:lockBounce .35s ease}
+    /* Responsive fixes */
+    @media(max-width:600px){
+      .navbar{padding:0 16px;height:56px}
+      .nav-brand h1{font-size:1rem}
+      .container{padding:20px 14px}
+      .page-title{font-size:1.2rem;margin-bottom:24px}
+      .page-title svg{width:20px;height:20px}
+      .card{padding:20px 16px;border-radius:12px;margin-bottom:14px}
+      .card-header h3{font-size:0.95rem}
+      .card-desc{font-size:0.8rem;margin-right:0;margin-bottom:14px}
+      .tabs{flex-direction:row;gap:0}
+      .tab{padding:9px 10px;font-size:0.8rem}
+      .url-field-row{flex-wrap:nowrap;padding:4px 4px 4px 10px}
+      .url-inline-input{font-size:0.8rem}
+      .url-inline-btn{padding:7px 12px;font-size:0.75rem}
+      .url-inline-btn svg{display:none}
+      .search-mini{padding:8px 10px}
+      .search-mini input{font-size:0.8rem}
+      .repo-select-card{padding:10px 12px;gap:10px}
+      .repo-select-card .rsc-icon{width:32px;height:32px}
+      .repo-select-card .rsc-info h4{font-size:0.82rem}
+      .repo-select-card .rsc-info p{font-size:0.7rem}
+      .repo-select-card .rsc-badge{font-size:0.6rem;padding:2px 6px}
+      .repos-scroll{max-height:250px}
+      .lock-toggle{padding:12px 14px;gap:10px}
+      .lock-icon-wrapper{width:36px;height:36px}
+      .lock-status{font-size:0.85rem}
+      .lock-hint{font-size:0.7rem}
+      .drop-zone{padding:32px 16px}
+      .drop-zone-icon{width:48px;height:48px}
+      .drop-zone p{font-size:0.82rem}
+      .btn{padding:11px 20px;font-size:0.88rem}
+      select,input[type="text"],input[type="url"]{padding:10px 12px;font-size:0.85rem}
+      .user-pill span{display:none}
+      .user-pill{padding:4px}
+      .user-pill .chevron-icon{margin-right:0}
+      .account-dropdown{left:auto;right:0;min-width:200px}
+      .selected-repo-banner{padding:12px 14px;gap:10px;flex-wrap:nowrap}
+      .selected-repo-banner .srb-icon{width:34px;height:34px}
+      .selected-repo-banner .srb-name{font-size:0.85rem}
+      .selected-repo-banner .srb-label{font-size:0.68rem}
+      footer{padding:20px 14px;margin-top:32px}
+    }
   </style>
 </head>
 <body>
@@ -186,11 +256,30 @@
 
       <div class="tabs">
         <button class="tab active" onclick="switchTab('existing')">مستودع موجود</button>
-        <button class="tab" onclick="switchTab('url')">رابط المستودع</button>
         <button class="tab" onclick="switchTab('new')">انشاء مستودع جديد</button>
       </div>
 
       <div class="tab-content active" id="tab-existing">
+        <!-- Repo URL field above search -->
+        <div class="url-field-inline">
+          <div class="url-field-row">
+            <div class="url-field-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
+            </div>
+            <input type="url" id="repoUrlInput" placeholder="https://github.com/owner/repo" dir="ltr" class="url-inline-input">
+            <button class="url-inline-btn" onclick="useRepoUrl()">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:15px;height:15px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
+              استخدام
+            </button>
+          </div>
+          <div class="error-msg" id="urlError" style="margin-top:8px">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="section-divider"><span>او اختر من مستودعاتك</span></div>
+
         <div class="repo-loading" id="repoLoading">
           <div class="spinner" style="display:block"></div>
           جاري تحميل المستودعات...
@@ -204,24 +293,6 @@
         </div>
       </div>
 
-      <div class="tab-content" id="tab-url">
-        <div class="form-group">
-          <label>رابط المستودع على GitHub</label>
-          <div class="url-input-group">
-            <input type="url" id="repoUrlInput" placeholder="https://github.com/owner/repo" dir="ltr">
-            <button class="btn btn-success btn-use-url" onclick="useRepoUrl()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
-              استخدام
-            </button>
-          </div>
-          <p class="url-helper">الصق رابط المستودع مثل: <code>https://github.com/owner/repo</code></p>
-        </div>
-        <div class="error-msg" id="urlError">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-          <span></span>
-        </div>
-      </div>
-
       <div class="tab-content" id="tab-new">
         <div class="form-group">
           <label>اسم المستودع الجديد</label>
@@ -231,9 +302,20 @@
           <label>الوصف (اختياري)</label>
           <input type="text" id="newRepoDesc" placeholder="وصف المستودع">
         </div>
-        <div class="checkbox-group">
-          <input type="checkbox" id="newRepoPrivate">
-          <label for="newRepoPrivate">مستودع خاص (Private)</label>
+        <div class="visibility-toggle">
+          <label class="visibility-label">نوع المستودع</label>
+          <div class="lock-toggle" id="lockToggle" onclick="toggleVisibility()">
+            <div class="lock-icon-wrapper" id="lockIconWrapper">
+              <svg id="lockIconUnlocked" class="lock-svg active" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 119 0v3.75M3.75 21.75h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+              <svg id="lockIconLocked" class="lock-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            </div>
+            <div class="lock-text">
+              <span class="lock-status" id="lockStatus">عام (Public)</span>
+              <span class="lock-hint" id="lockHint">يمكن لاي شخص رؤية هذا المستودع</span>
+            </div>
+            <div class="lock-indicator" id="lockIndicator"></div>
+          </div>
+          <input type="checkbox" id="newRepoPrivate" style="display:none">
         </div>
         <div class="error-msg" id="createRepoError">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
@@ -369,14 +451,37 @@
       if (tab === 'existing') {
         document.querySelectorAll('.tab')[0].classList.add('active');
         document.getElementById('tab-existing').classList.add('active');
-      } else if (tab === 'url') {
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.getElementById('tab-url').classList.add('active');
       } else {
-        document.querySelectorAll('.tab')[2].classList.add('active');
+        document.querySelectorAll('.tab')[1].classList.add('active');
         document.getElementById('tab-new').classList.add('active');
       }
       updateUploadButton();
+    }
+
+    function toggleVisibility() {
+      const cb = document.getElementById('newRepoPrivate');
+      const toggle = document.getElementById('lockToggle');
+      const iconWrapper = document.getElementById('lockIconWrapper');
+      const unlockedIcon = document.getElementById('lockIconUnlocked');
+      const lockedIcon = document.getElementById('lockIconLocked');
+      const status = document.getElementById('lockStatus');
+      const hint = document.getElementById('lockHint');
+      cb.checked = !cb.checked;
+      if (cb.checked) {
+        toggle.classList.add('private');
+        unlockedIcon.classList.remove('active');
+        lockedIcon.classList.add('active');
+        status.textContent = '\u062e\u0627\u0635 (Private)';
+        hint.textContent = '\u0641\u0642\u0637 \u0623\u0646\u062a \u0648\u0627\u0644\u0645\u062a\u0639\u0627\u0648\u0646\u0648\u0646 \u064a\u0645\u0643\u0646\u0647\u0645 \u0627\u0644\u0648\u0635\u0648\u0644';
+      } else {
+        toggle.classList.remove('private');
+        lockedIcon.classList.remove('active');
+        unlockedIcon.classList.add('active');
+        status.textContent = '\u0639\u0627\u0645 (Public)';
+        hint.textContent = '\u064a\u0645\u0643\u0646 \u0644\u0627\u064a \u0634\u062e\u0635 \u0631\u0624\u064a\u0629 \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062a\u0648\u062f\u0639';
+      }
+      iconWrapper.classList.add('bounce');
+      setTimeout(() => iconWrapper.classList.remove('bounce'), 350);
     }
 
     function updateSelectedBanner() {
