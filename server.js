@@ -240,7 +240,25 @@ app.post('/api/github/create-repo', requireApiAuth, async (req, res) => {
     });
 
     // Wait for GitHub to fully initialize the repo (auto_init creates an initial commit)
-    await new Promise(r => setTimeout(r, 2000));
+    // Poll the ref endpoint instead of a fixed sleep to ensure the repo is truly ready
+    const defaultBranch = response.data.default_branch || 'main';
+    let repoReady = false;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await new Promise(r => setTimeout(r, 1500));
+      try {
+        await axios.get(`https://api.github.com/repos/${response.data.full_name}/git/ref/heads/${defaultBranch}`, {
+          headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+        });
+        repoReady = true;
+        break;
+      } catch (e) {
+        // Not ready yet, keep polling
+      }
+    }
+
+    if (!repoReady) {
+      console.warn('Repo created but initialization not confirmed after polling — may cause upload issues');
+    }
 
     res.json({
       success: true,
@@ -375,11 +393,11 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
           message: 'Initial commit via git-zip',
           content: Buffer.from('').toString('base64')
         }, { headers });
-        await new Promise(r => setTimeout(r, 2000));
+        // Poll for the ref to appear instead of fixed sleep
         const defaultBranch = repoData.default_branch || 'main';
         const initRef = await retryWithDelay(() =>
           axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers })
-        , 3, 1500);
+        , 8, 2000);
         latestCommitSha = initRef.data.object.sha;
         const initCommit = await axios.get(`https://api.github.com/repos/${repoFullName}/git/commits/${latestCommitSha}`, { headers });
         treeSha = initCommit.data.tree.sha;
@@ -411,8 +429,10 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
 
     let newTreeSha;
     if (isEmptyRepo) {
-      // For empty repos: create a standalone tree (no base_tree)
-      const newTree = await axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { tree: treeItems }, { headers });
+      // For empty repos: create a standalone tree (no base_tree), with retry for propagation delay
+      const newTree = await retryWithDelay(() =>
+        axios.post(`https://api.github.com/repos/${repoFullName}/git/trees`, { tree: treeItems }, { headers })
+      , 5, 2000);
       newTreeSha = newTree.data.sha;
 
       // Create the first commit (no parents)
