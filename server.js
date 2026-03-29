@@ -15,6 +15,11 @@ const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '';
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
+// Vercel OAuth Config (Integration)
+const VERCEL_CLIENT_ID = process.env.VERCEL_CLIENT_ID || '';
+const VERCEL_CLIENT_SECRET = process.env.VERCEL_CLIENT_SECRET || '';
+const VERCEL_INTEGRATION_SLUG = process.env.VERCEL_INTEGRATION_SLUG || '';
+
 // Encryption key for persistent auth cookie (survives server restarts & Vercel cold starts)
 const AUTH_SECRET = process.env.SESSION_SECRET || 'git-zip-secret-key-change-me';
 const CRYPTO_KEY = crypto.scryptSync(AUTH_SECRET, 'gitzip-salt', 32);
@@ -575,36 +580,61 @@ app.get('/deploy', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'deploy.html'));
 });
 
-// ─── Vercel Token Management ───
-app.post('/api/vercel/connect', requireApiAuth, async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) return res.json({ success: false, message: 'Vercel token مطلوب' });
+// ─── Vercel OAuth (Integration) ───
+app.get('/auth/vercel', requireAuth, (req, res) => {
+  if (!VERCEL_INTEGRATION_SLUG || !VERCEL_CLIENT_ID) {
+    return res.redirect('/deploy?error=vercel_not_configured');
+  }
+  const state = crypto.randomUUID();
+  req.session.vercelOauthState = state;
+  const params = new URLSearchParams({
+    state,
+    redirect_uri: `${BASE_URL}/auth/vercel/callback`
+  });
+  res.redirect(`https://vercel.com/integrations/${VERCEL_INTEGRATION_SLUG}/new?${params}`);
+});
 
-    // Verify token by fetching user info
-    const userRes = await axios.get('https://api.vercel.com/v2/user', {
-      headers: { Authorization: `Bearer ${token}` }
+app.get('/auth/vercel/callback', requireAuth, async (req, res) => {
+  try {
+    const { code, state } = req.query;
+    if (!code || state !== req.session.vercelOauthState) {
+      return res.redirect('/deploy?error=vercel_auth_failed');
+    }
+    delete req.session.vercelOauthState;
+
+    // Exchange code for access token
+    const tokenRes = await axios.post('https://api.vercel.com/v2/oauth/access_token', new URLSearchParams({
+      client_id: VERCEL_CLIENT_ID,
+      client_secret: VERCEL_CLIENT_SECRET,
+      code,
+      redirect_uri: `${BASE_URL}/auth/vercel/callback`
+    }).toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
-    req.session.vercelToken = token;
+    const accessToken = tokenRes.data.access_token;
+    if (!accessToken) return res.redirect('/deploy?error=vercel_token_failed');
+
+    // Get user info
+    const userRes = await axios.get('https://api.vercel.com/v2/user', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+
+    req.session.vercelToken = accessToken;
     req.session.vercelUser = userRes.data.user.username || userRes.data.user.name;
     req.session.vercelEmail = userRes.data.user.email;
 
     // Persist in auth cookie
     res.cookie('gitzip_vercel', encryptAuth({
-      vercelToken: token,
+      vercelToken: accessToken,
       vercelUser: req.session.vercelUser,
       vercelEmail: req.session.vercelEmail
     }), { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' });
 
-    res.json({
-      success: true,
-      user: req.session.vercelUser,
-      email: req.session.vercelEmail
-    });
+    res.redirect('/deploy');
   } catch (err) {
-    const msg = err.response?.data?.error?.message || 'فشل التحقق من التوكن';
-    res.json({ success: false, message: msg });
+    console.error('Vercel OAuth error:', err.response?.data || err.message);
+    res.redirect('/deploy?error=vercel_auth_failed');
   }
 });
 

@@ -57,19 +57,7 @@
     .connect-card .vercel-logo{width:56px;height:56px;margin:0 auto 20px}
     .connect-card h3{color:#fafafa;font-size:1.2rem;margin-bottom:8px}
     .connect-card p{color:#52525b;font-size:0.9rem;margin-bottom:24px;line-height:1.7}
-    .connect-card .steps-list{text-align:right;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:24px;max-width:500px;margin-left:auto;margin-right:auto}
-    .connect-card .steps-list ol{padding-right:20px;color:#a1a1aa;font-size:0.85rem;line-height:2.2}
-    .connect-card .steps-list a{color:#4ade80;text-decoration:none}
-    .connect-card .steps-list a:hover{text-decoration:underline}
-    .connect-card .steps-list code{background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:4px;font-size:0.82rem;color:#fafafa}
-    .token-input-row{display:flex;gap:10px;max-width:500px;margin:0 auto}
-    .token-input-row input{flex:1;padding:12px 16px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;font-family:monospace;direction:ltr;text-align:left}
-    .token-input-row input:focus{border-color:rgba(255,255,255,0.25)}
-    .token-input-row button{padding:12px 28px;background:rgba(0,200,80,0.15);color:#4ade80;border:1px solid rgba(0,200,80,0.3);border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit;white-space:nowrap}
-    .token-input-row button:hover{background:rgba(0,200,80,0.25)}
-    .connect-status{margin-top:16px;font-size:0.85rem;display:none}
-    .connect-status.error{color:#fca5a5;display:block}
-    .connect-status.success{color:#4ade80;display:block}
+    .btn-vercel-connect:hover{background:rgba(255,255,255,0.12)!important;transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.25)!important}
 
     /* Vercel Connected Banner */
     .vercel-banner{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
@@ -376,21 +364,12 @@
       <div class="connect-card">
         <svg viewBox="0 0 76 65" fill="#fafafa" style="width:56px;height:56px;margin:0 auto 20px;display:block;stroke:none"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
         <h3>ربط حساب Vercel</h3>
-        <p>لنشر مشاريعك على Vercel، تحتاج الى انشاء Access Token من حسابك على Vercel.</p>
-        <div class="steps-list">
-          <ol>
-            <li>اذهب الى <a href="https://vercel.com/account/tokens" target="_blank">Vercel Settings &rarr; Tokens</a></li>
-            <li>اضغط على <code>Create Token</code></li>
-            <li>اختر اسما مثل <code>git-zip</code></li>
-            <li>اختر الصلاحية <code>Full Account</code></li>
-            <li>انسخ التوكن والصقه هنا</li>
-          </ol>
-        </div>
-        <div class="token-input-row">
-          <input type="text" id="vercelTokenInput" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx" dir="ltr">
-          <button onclick="connectVercel()" id="connectBtn">ربط الحساب</button>
-        </div>
-        <div class="connect-status" id="connectStatus"></div>
+        <p>لنشر مشاريعك على Vercel، قم بتسجيل الدخول مباشرة عبر حسابك على Vercel.</p>
+        <div class="error-banner" id="vercelErrorBanner" style="display:none;background:rgba(127,29,29,0.15);border:1px solid rgba(127,29,29,0.3);color:#fca5a5;padding:12px 20px;border-radius:10px;margin-bottom:20px;font-size:0.9rem;text-align:center">فشل تسجيل الدخول الى Vercel. حاول مرة اخرى.</div>
+        <a href="/auth/vercel" class="btn-vercel-connect" style="display:inline-flex;align-items:center;gap:12px;padding:16px 40px;background:rgba(255,255,255,0.06);color:#fafafa;border-radius:12px;text-decoration:none;font-size:1.05rem;font-weight:600;transition:all .3s ease;border:1px solid rgba(255,255,255,0.15);cursor:pointer;margin:0 auto;justify-content:center;width:100%;max-width:400px">
+          <svg viewBox="0 0 76 65" fill="currentColor" style="width:22px;height:22px;stroke:none"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+          تسجيل الدخول عبر Vercel
+        </a>
       </div>
     </div>
 
@@ -638,33 +617,21 @@
     }
 
     // ─── Vercel Connection ───
-    async function connectVercel() {
-      const token = document.getElementById('vercelTokenInput').value.trim();
-      const statusEl = document.getElementById('connectStatus');
-      const btn = document.getElementById('connectBtn');
-      if (!token) { statusEl.className = 'connect-status error'; statusEl.textContent = 'الرجاء ادخال التوكن'; return; }
-      btn.disabled = true; btn.textContent = 'جاري الربط...';
-      statusEl.className = 'connect-status'; statusEl.style.display = 'none';
-
-      try {
-        const data = await apiFetch('/api/vercel/connect', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token })
-        });
-        if (data.success) {
-          statusEl.className = 'connect-status success';
-          statusEl.textContent = 'تم الربط بنجاح مع ' + data.user;
-          setTimeout(() => location.reload(), 1000);
-        } else {
-          statusEl.className = 'connect-status error';
-          statusEl.textContent = data.message;
+    // Check for OAuth error in URL
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const err = urlParams.get('error');
+      if (err) {
+        const banner = document.getElementById('vercelErrorBanner');
+        if (banner) {
+          if (err === 'vercel_not_configured') {
+            banner.textContent = 'لم يتم اعداد Vercel Integration بعد. تواصل مع مدير الموقع.';
+          }
+          banner.style.display = 'block';
         }
-      } catch (err) {
-        statusEl.className = 'connect-status error';
-        statusEl.textContent = 'حدث خطأ اثناء الربط';
+        window.history.replaceState({}, '', '/deploy');
       }
-      btn.disabled = false; btn.textContent = 'ربط الحساب';
-    }
+    })();
 
     async function disconnectVercel() {
       if (!confirm('هل تريد قطع الاتصال بحساب Vercel؟')) return;
