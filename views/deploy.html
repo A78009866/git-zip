@@ -95,6 +95,9 @@
     .status-dot{width:6px;height:6px;border-radius:50%}
     .pc-actions{display:flex;gap:8px;margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:14px}
     .pc-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#a1a1aa;font-size:0.78rem;cursor:pointer;transition:all .2s;font-family:inherit}
+    .pc-btn:disabled{opacity:0.5;cursor:not-allowed}
+    .status-building .status-dot{animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
     .pc-btn:hover{background:rgba(255,255,255,0.08);color:#fafafa}
     .pc-btn.danger:hover{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.25)}
     .pc-btn svg{width:14px;height:14px}
@@ -151,9 +154,10 @@
     #loading{text-align:center;padding:60px;color:#52525b}
     .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.06);border-top:3px solid #a1a1aa;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .empty-state{text-align:center;padding:60px 20px;color:#3f3f46}
-    .empty-state svg{width:48px;height:48px;stroke:#27272a;margin-bottom:16px}
-    .empty-state p{font-size:0.9rem;margin-bottom:16px}
+    .empty-state{text-align:center;padding:60px 20px;color:#52525b}
+    .empty-state .empty-icon{width:64px;height:64px;margin:0 auto 20px;background:rgba(255,255,255,0.04);border-radius:16px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.06)}
+    .empty-state p{font-size:0.92rem;margin-bottom:8px;color:#71717a}
+    .empty-state .empty-hint{font-size:0.8rem;color:#52525b;margin-bottom:20px}
 
     /* Framework icons */
     .fw-next{background:rgba(255,255,255,0.08)}
@@ -265,8 +269,10 @@
     body.light-mode .confirm-dialog h4{color:#1a1a1a}
     body.light-mode .confirm-dialog p{color:#71717a}
     body.light-mode .confirm-dialog .confirm-name{color:#dc2626}
-    body.light-mode .empty-state{color:#a1a1aa}
-    body.light-mode .empty-state svg{stroke:#d4d4d8}
+    body.light-mode .empty-state{color:#71717a}
+    body.light-mode .empty-state .empty-icon{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.08)}
+    body.light-mode .empty-state p{color:#71717a}
+    body.light-mode .empty-state .empty-hint{color:#a1a1aa}
     body.light-mode #loading{color:#71717a}
     body.light-mode .spinner{border-color:rgba(0,0,0,0.08);border-top-color:#71717a}
     body.light-mode .modal .search-mini{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.25)}
@@ -406,10 +412,13 @@
 
       <div id="projectsContainer" class="projects-grid"></div>
       <div id="emptyProjects" class="empty-state" style="display:none">
-        <svg viewBox="0 0 76 65" fill="none" stroke="currentColor" stroke-width="2"><path d="M37.5274 4L71.0548 61H4L37.5274 4Z"/></svg>
+        <div class="empty-icon">
+          <svg viewBox="0 0 76 65" fill="currentColor" style="stroke:none;width:32px;height:32px;opacity:0.5"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+        </div>
         <p>لا توجد مشاريع منشورة بعد</p>
-        <button class="btn-sm btn-deploy" onclick="openDeployModal()">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        <p class="empty-hint">انشر مشروعك الاول على Vercel بضغطة واحدة</p>
+        <button class="btn-sm btn-deploy" onclick="openDeployModal()" style="margin:0 auto">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
           نشر مشروعك الاول
         </button>
       </div>
@@ -664,7 +673,7 @@
             <span class="pc-framework">${fw.label}</span>
           </div>
           <div class="pc-url">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
             <a href="${url}" target="_blank">${url.replace('https://','')}</a>
           </div>
           <div class="pc-meta">
@@ -768,7 +777,7 @@
           const s = document.getElementById('deploySuccess');
           s.innerHTML = 'تم نشر المشروع بنجاح!<br><a href="' + data.url + '" target="_blank">' + data.url + '</a>';
           s.style.display = 'block';
-          setTimeout(() => { closeDeployModal(); loadProjects(); }, 2000);
+          setTimeout(() => { closeDeployModal(); loadProjects(); startStatusPolling(); }, 2000);
         } else {
           document.getElementById('deployError').textContent = data.message;
           document.getElementById('deployError').style.display = 'block';
@@ -826,7 +835,7 @@
         if (data.success) {
           btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg> تم';
           btn.style.color = '#4ade80';
-          setTimeout(() => { btn.innerHTML = origHTML; btn.style.color = ''; btn.disabled = false; loadProjects(); }, 2000);
+          setTimeout(() => { btn.innerHTML = origHTML; btn.style.color = ''; btn.disabled = false; loadProjects(); startStatusPolling(); }, 2000);
         } else {
           alert(data.message);
           btn.innerHTML = origHTML; btn.disabled = false;
@@ -837,6 +846,29 @@
       }
     }
 
+    // ─── Status Polling ───
+    let statusPollTimer = null;
+    function startStatusPolling() {
+      stopStatusPolling();
+      let pollCount = 0;
+      statusPollTimer = setInterval(async () => {
+        pollCount++;
+        try {
+          const data = await apiFetch('/api/vercel/projects');
+          if (data.success) {
+            const hadBuilding = allProjects.some(p => p.latestDeployment && ['BUILDING','INITIALIZING','QUEUED'].includes((p.latestDeployment.state||"").toUpperCase()));
+            allProjects = data.projects;
+            renderProjects(allProjects);
+            const hasBuilding = allProjects.some(p => p.latestDeployment && ['BUILDING','INITIALIZING','QUEUED'].includes((p.latestDeployment.state||"").toUpperCase()));
+            if (!hasBuilding || pollCount >= 60) stopStatusPolling();
+          }
+        } catch(e) { stopStatusPolling(); }
+      }, 5000);
+    }
+    function stopStatusPolling() {
+      if (statusPollTimer) { clearInterval(statusPollTimer); statusPollTimer = null; }
+    }
+
     // ─── Load Data ───
     async function loadProjects() {
       try {
@@ -844,6 +876,8 @@
         if (data.success) {
           allProjects = data.projects;
           renderProjects(allProjects);
+          const hasBuilding = allProjects.some(p => p.latestDeployment && ['BUILDING','INITIALIZING','QUEUED'].includes((p.latestDeployment.state||"").toUpperCase()));
+          if (hasBuilding) startStatusPolling();
         } else if (data.needsConnect) {
           document.getElementById('mainContent').style.display = 'none';
           document.getElementById('connectSection').style.display = 'block';
