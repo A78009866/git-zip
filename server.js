@@ -570,6 +570,391 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
   }
 });
 
+// ─── Vercel Deploy Page ───
+app.get('/deploy', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'deploy.html'));
+});
+
+// ─── Vercel Token Management ───
+app.post('/api/vercel/connect', requireApiAuth, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.json({ success: false, message: 'Vercel token مطلوب' });
+
+    // Verify token by fetching user info
+    const userRes = await axios.get('https://api.vercel.com/v2/user', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    req.session.vercelToken = token;
+    req.session.vercelUser = userRes.data.user.username || userRes.data.user.name;
+    req.session.vercelEmail = userRes.data.user.email;
+
+    // Persist in auth cookie
+    res.cookie('gitzip_vercel', encryptAuth({
+      vercelToken: token,
+      vercelUser: req.session.vercelUser,
+      vercelEmail: req.session.vercelEmail
+    }), { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' });
+
+    res.json({
+      success: true,
+      user: req.session.vercelUser,
+      email: req.session.vercelEmail
+    });
+  } catch (err) {
+    const msg = err.response?.data?.error?.message || 'فشل التحقق من التوكن';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Restore Vercel session from cookie
+app.use((req, res, next) => {
+  if (req.session && !req.session.vercelToken) {
+    const vc = req.cookies.gitzip_vercel;
+    if (vc) {
+      const auth = decryptAuth(vc);
+      if (auth && auth.vercelToken) {
+        req.session.vercelToken = auth.vercelToken;
+        req.session.vercelUser = auth.vercelUser;
+        req.session.vercelEmail = auth.vercelEmail;
+      }
+    }
+  }
+  next();
+});
+
+app.get('/api/vercel/status', requireApiAuth, (req, res) => {
+  res.json({
+    connected: !!req.session.vercelToken,
+    user: req.session.vercelUser || null,
+    email: req.session.vercelEmail || null
+  });
+});
+
+app.get('/api/vercel/disconnect', requireApiAuth, (req, res) => {
+  delete req.session.vercelToken;
+  delete req.session.vercelUser;
+  delete req.session.vercelEmail;
+  res.clearCookie('gitzip_vercel');
+  res.json({ success: true });
+});
+
+// ─── Vercel Projects ───
+app.get('/api/vercel/projects', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل', needsConnect: true });
+
+    const response = await axios.get('https://api.vercel.com/v9/projects?limit=100', {
+      headers: { Authorization: `Bearer ${req.session.vercelToken}` }
+    });
+
+    const projects = response.data.projects.map(p => ({
+      id: p.id,
+      name: p.name,
+      framework: p.framework || null,
+      updatedAt: p.updatedAt,
+      createdAt: p.createdAt,
+      latestDeployment: p.latestDeployments?.[0] ? {
+        id: p.latestDeployments[0].id,
+        url: p.latestDeployments[0].url,
+        state: p.latestDeployments[0].readyState || p.latestDeployments[0].state,
+        createdAt: p.latestDeployments[0].createdAt
+      } : null,
+      link: p.link ? {
+        type: p.link.type,
+        repo: p.link.repo,
+        org: p.link.org
+      } : null,
+      targets: p.targets || {}
+    }));
+
+    res.json({ success: true, projects });
+  } catch (err) {
+    const msg = err.response?.data?.error?.message || 'فشل جلب المشاريع';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Deploy a GitHub repo to Vercel (import project)
+app.post('/api/vercel/deploy', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل' });
+
+    const { repoFullName, projectName, framework, buildCommand, outputDir, installCommand } = req.body;
+    if (!repoFullName) return res.json({ success: false, message: 'المستودع مطلوب' });
+
+    const vHeaders = { Authorization: `Bearer ${req.session.vercelToken}`, 'Content-Type': 'application/json' };
+
+    // Create project linked to GitHub repo
+    const [owner, repo] = repoFullName.split('/');
+    const createBody = {
+      name: projectName || repo,
+      framework: framework || null,
+      gitRepository: {
+        type: 'github',
+        repo: repoFullName
+      }
+    };
+    if (buildCommand) createBody.buildCommand = buildCommand;
+    if (outputDir) createBody.outputDirectory = outputDir;
+    if (installCommand) createBody.installCommand = installCommand;
+
+    const createRes = await axios.post('https://api.vercel.com/v10/projects', createBody, { headers: vHeaders });
+
+    const project = createRes.data;
+
+    // Trigger a deployment
+    let deployment = null;
+    try {
+      const deployRes = await axios.post('https://api.vercel.com/v13/deployments', {
+        name: project.name,
+        project: project.id,
+        gitSource: {
+          type: 'github',
+          repoId: String(project.link?.repoId || ''),
+          ref: project.link?.productionBranch || 'main',
+          org: owner,
+          repo: repo
+        }
+      }, { headers: vHeaders });
+      deployment = {
+        id: deployRes.data.id,
+        url: deployRes.data.url,
+        state: deployRes.data.readyState || deployRes.data.status
+      };
+    } catch (deployErr) {
+      console.warn('Auto-deploy trigger failed (project may auto-deploy on its own):', deployErr.response?.data?.error?.message || deployErr.message);
+    }
+
+    res.json({
+      success: true,
+      project: {
+        id: project.id,
+        name: project.name,
+        framework: project.framework
+      },
+      deployment,
+      url: `https://${project.name}.vercel.app`
+    });
+  } catch (err) {
+    const msg = err.response?.data?.error?.message || 'فشل نشر المشروع';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Get project deployments
+app.get('/api/vercel/projects/:projectId/deployments', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل' });
+
+    const response = await axios.get(`https://api.vercel.com/v6/deployments?projectId=${req.params.projectId}&limit=10`, {
+      headers: { Authorization: `Bearer ${req.session.vercelToken}` }
+    });
+
+    const deployments = response.data.deployments.map(d => ({
+      id: d.uid,
+      url: d.url,
+      state: d.readyState || d.state,
+      createdAt: d.created,
+      meta: d.meta || {}
+    }));
+
+    res.json({ success: true, deployments });
+  } catch (err) {
+    res.json({ success: false, message: 'فشل جلب عمليات النشر' });
+  }
+});
+
+// Get project domains
+app.get('/api/vercel/projects/:projectId/domains', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل' });
+
+    const response = await axios.get(`https://api.vercel.com/v9/projects/${req.params.projectId}/domains`, {
+      headers: { Authorization: `Bearer ${req.session.vercelToken}` }
+    });
+
+    res.json({ success: true, domains: response.data.domains || [] });
+  } catch (err) {
+    res.json({ success: false, message: 'فشل جلب النطاقات' });
+  }
+});
+
+// Delete a Vercel project
+app.delete('/api/vercel/projects/:projectId', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل' });
+
+    await axios.delete(`https://api.vercel.com/v9/projects/${req.params.projectId}`, {
+      headers: { Authorization: `Bearer ${req.session.vercelToken}` }
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    const msg = err.response?.data?.error?.message || 'فشل حذف المشروع';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Redeploy a Vercel project
+app.post('/api/vercel/projects/:projectId/redeploy', requireApiAuth, async (req, res) => {
+  try {
+    if (!req.session.vercelToken) return res.json({ success: false, message: 'Vercel غير متصل' });
+
+    const vHeaders = { Authorization: `Bearer ${req.session.vercelToken}`, 'Content-Type': 'application/json' };
+
+    // Get project info first
+    const projRes = await axios.get(`https://api.vercel.com/v9/projects/${req.params.projectId}`, {
+      headers: { Authorization: `Bearer ${req.session.vercelToken}` }
+    });
+    const project = projRes.data;
+
+    // Trigger redeployment
+    const deployBody = {
+      name: project.name,
+      project: project.id,
+      target: 'production'
+    };
+
+    if (project.link) {
+      deployBody.gitSource = {
+        type: 'github',
+        ref: project.link.productionBranch || 'main',
+        org: project.link.org,
+        repo: project.link.repo,
+        repoId: String(project.link.repoId || '')
+      };
+    }
+
+    const deployRes = await axios.post('https://api.vercel.com/v13/deployments', deployBody, { headers: vHeaders });
+
+    res.json({
+      success: true,
+      deployment: {
+        id: deployRes.data.id,
+        url: deployRes.data.url,
+        state: deployRes.data.readyState || deployRes.data.status
+      }
+    });
+  } catch (err) {
+    const msg = err.response?.data?.error?.message || 'فشل اعادة النشر';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// ─── GitHub Repo Management ───
+
+// Delete a repository
+app.delete('/api/github/repos/:owner/:repo', requireApiAuth, async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    await axios.delete(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+    });
+    res.json({ success: true });
+  } catch (err) {
+    const status = err.response?.status;
+    let msg = 'فشل حذف المستودع';
+    if (status === 403) msg = 'ليس لديك صلاحية حذف هذا المستودع. يجب ان تكون مالك المستودع.';
+    else if (status === 404) msg = 'المستودع غير موجود';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Rename a repository
+app.patch('/api/github/repos/:owner/:repo/rename', requireApiAuth, async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const { newName } = req.body;
+    if (!newName) return res.json({ success: false, message: 'الاسم الجديد مطلوب' });
+
+    const response = await axios.patch(`https://api.github.com/repos/${owner}/${repo}`, {
+      name: newName
+    }, {
+      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+    });
+
+    res.json({
+      success: true,
+      repo: {
+        name: response.data.name,
+        full_name: response.data.full_name,
+        html_url: response.data.html_url
+      }
+    });
+  } catch (err) {
+    const msg = err.response?.data?.message || 'فشل تغيير اسم المستودع';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Change repository visibility
+app.patch('/api/github/repos/:owner/:repo/visibility', requireApiAuth, async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const { isPrivate } = req.body;
+
+    const response = await axios.patch(`https://api.github.com/repos/${owner}/${repo}`, {
+      private: isPrivate
+    }, {
+      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+    });
+
+    res.json({
+      success: true,
+      private: response.data.private
+    });
+  } catch (err) {
+    const msg = err.response?.data?.message || 'فشل تغيير خصوصية المستودع';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Update repository description
+app.patch('/api/github/repos/:owner/:repo/description', requireApiAuth, async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const { description } = req.body;
+
+    const response = await axios.patch(`https://api.github.com/repos/${owner}/${repo}`, {
+      description: description || ''
+    }, {
+      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+    });
+
+    res.json({
+      success: true,
+      description: response.data.description
+    });
+  } catch (err) {
+    const msg = err.response?.data?.message || 'فشل تحديث الوصف';
+    res.json({ success: false, message: msg });
+  }
+});
+
+// Update repository (general - homepage, topics, etc.)
+app.patch('/api/github/repos/:owner/:repo', requireApiAuth, async (req, res) => {
+  try {
+    const { owner, repo } = req.params;
+    const updates = {};
+    if (req.body.description !== undefined) updates.description = req.body.description;
+    if (req.body.homepage !== undefined) updates.homepage = req.body.homepage;
+    if (req.body.has_wiki !== undefined) updates.has_wiki = req.body.has_wiki;
+    if (req.body.has_issues !== undefined) updates.has_issues = req.body.has_issues;
+    if (req.body.default_branch !== undefined) updates.default_branch = req.body.default_branch;
+
+    const response = await axios.patch(`https://api.github.com/repos/${owner}/${repo}`, updates, {
+      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
+    });
+
+    res.json({ success: true, repo: response.data });
+  } catch (err) {
+    const msg = err.response?.data?.message || 'فشل تحديث المستودع';
+    res.json({ success: false, message: msg });
+  }
+});
+
 // Start server
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {

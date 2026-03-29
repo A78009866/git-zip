@@ -13,7 +13,10 @@
     .nav-brand img{width:32px;height:32px;border-radius:8px}
     .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
     .nav-brand h1 span{color:#71717a}
-    .nav-actions{display:flex;align-items:center;gap:16px}
+    .nav-actions{display:flex;align-items:center;gap:12px}
+    .nav-link{color:#a1a1aa;text-decoration:none;font-size:0.85rem;font-weight:500;padding:8px 14px;border-radius:8px;transition:all .2s;display:flex;align-items:center;gap:6px}
+    .nav-link:hover{color:#fafafa;background:rgba(255,255,255,0.06)}
+    .nav-link svg{width:16px;height:16px}
     .user-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:5px 16px 5px 6px;cursor:pointer;transition:all .2s;position:relative}
     .user-pill:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.14)}
     .user-pill img{width:28px;height:28px;border-radius:50%}
@@ -36,9 +39,13 @@
     .container{max-width:960px;margin:0 auto;padding:32px 24px}
     .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
     .page-header h2{font-size:1.5rem;color:#fafafa;font-weight:700}
+    .header-actions{display:flex;gap:10px;flex-wrap:wrap}
     .btn-upload{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(0,200,80,0.15);color:#4ade80;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .3s;border:1px solid rgba(0,200,80,0.3);cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
     .btn-upload:hover{background:rgba(0,200,80,0.25);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,200,80,0.15);border-color:rgba(0,200,80,0.45)}
     .btn-upload svg{width:18px;height:18px}
+    .btn-vercel{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.06);color:#fafafa;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .3s;border:1px solid rgba(255,255,255,0.15);cursor:pointer}
+    .btn-vercel:hover{background:rgba(255,255,255,0.12);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.25)}
+    .btn-vercel svg{width:18px;height:18px}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px}
     @media(max-width:640px){.stats{grid-template-columns:1fr}}
     .stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
@@ -53,23 +60,28 @@
     .search-box input::placeholder{color:#3f3f46}
     .repos-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
     @media(max-width:700px){.repos-grid{grid-template-columns:1fr}}
-    .repo-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:22px;transition:all .25s;cursor:pointer;position:relative;overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+    .repo-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:22px;transition:all .25s;position:relative;overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
     .repo-card:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.4)}
     .repo-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-    .repo-name{display:flex;align-items:center;gap:8px}
+    .repo-name{display:flex;align-items:center;gap:8px;cursor:pointer}
     .repo-name svg{width:18px;height:18px;flex-shrink:0}
     .repo-name h4{color:#fafafa;font-size:0.95rem;font-weight:600}
     .repo-badge{padding:3px 10px;border-radius:100px;font-size:0.7rem;font-weight:600}
     .badge-private{background:rgba(124,58,237,0.08);color:#a78bfa;border:1px solid rgba(124,58,237,0.2)}
     .badge-public{background:rgba(5,150,105,0.08);color:#34d399;border:1px solid rgba(5,150,105,0.2)}
     .repo-desc{color:#52525b;font-size:0.82rem;line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .repo-meta{display:flex;align-items:center;gap:16px}
+    .repo-meta{display:flex;align-items:center;gap:16px;margin-bottom:12px}
     .meta-item{display:flex;align-items:center;gap:5px;color:#3f3f46;font-size:0.75rem}
     .meta-item svg{width:14px;height:14px}
     .lang-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
     .repo-link{position:absolute;top:22px;left:22px;color:#3f3f46;transition:color .2s}
     .repo-link:hover{color:#a1a1aa}
     .repo-link svg{width:16px;height:16px}
+    .repo-actions{display:flex;gap:6px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;flex-wrap:wrap}
+    .repo-action-btn{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#71717a;font-size:0.72rem;cursor:pointer;transition:all .2s;font-family:inherit;white-space:nowrap}
+    .repo-action-btn:hover{background:rgba(255,255,255,0.08);color:#fafafa}
+    .repo-action-btn.danger:hover{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.25)}
+    .repo-action-btn svg{width:12px;height:12px}
     #loading{text-align:center;padding:60px;color:#52525b}
     .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.06);border-top:3px solid #a1a1aa;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px}
     @keyframes spin{to{transform:rotate(360deg)}}
@@ -79,7 +91,47 @@
     .dropdown-overlay{position:fixed;inset:0;z-index:49;display:none}
     .dropdown-overlay.show{display:block}
     footer{text-align:center;padding:32px 24px;color:#3f3f46;font-size:0.8rem;border-top:1px solid rgba(255,255,255,0.04);margin-top:48px}
-    /* Theme Toggle Switch */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+    .modal-overlay.show{display:flex}
+    .modal{background:#0a0a0a;border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;max-width:480px;padding:32px}
+    .modal h3{color:#fafafa;font-size:1.1rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+    .modal h3 svg{width:20px;height:20px}
+    .modal .modal-desc{color:#52525b;font-size:0.85rem;margin-bottom:20px}
+    .modal .form-group{margin-bottom:16px}
+    .modal label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
+    .modal input[type="text"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s}
+    .modal input:focus{border-color:rgba(255,255,255,0.2)}
+    .modal-actions{display:flex;gap:10px;margin-top:20px}
+    .btn-sm{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .3s;border:1px solid;font-family:inherit}
+    .modal-actions .btn-sm{flex:1;justify-content:center}
+    .btn-cancel{background:rgba(255,255,255,0.04);color:#a1a1aa;border-color:rgba(255,255,255,0.1)}
+    .btn-cancel:hover{background:rgba(255,255,255,0.08);color:#fafafa}
+    .btn-primary{background:rgba(0,200,80,0.15);color:#4ade80;border-color:rgba(0,200,80,0.3)}
+    .btn-primary:hover{background:rgba(0,200,80,0.25)}
+    .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.25)}
+    .btn-danger:hover{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4)}
+    .modal .error-msg{background:rgba(127,29,29,0.12);border:1px solid rgba(127,29,29,0.25);color:#fca5a5;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;display:none}
+    .modal .success-msg{background:rgba(5,150,105,0.12);border:1px solid rgba(5,150,105,0.25);color:#6ee7b7;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;display:none}
+    .modal .spinner-inline{width:18px;height:18px;border-width:2px;margin:0;display:none}
+    .confirm-dialog{text-align:center;padding:8px}
+    .confirm-dialog .confirm-icon{width:56px;height:56px;margin:0 auto 16px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center}
+    .confirm-dialog .confirm-icon svg{width:28px;height:28px;stroke:#f87171}
+    .confirm-dialog h4{color:#fafafa;font-size:1.1rem;margin-bottom:8px}
+    .confirm-dialog p{color:#52525b;font-size:0.88rem;margin-bottom:20px;line-height:1.6}
+    .confirm-dialog .confirm-name{color:#f87171;font-weight:600}
+    .visibility-option{display:flex;align-items:center;gap:12px;padding:14px;background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.08);border-radius:12px;cursor:pointer;transition:all .25s;margin-bottom:8px}
+    .visibility-option:hover{border-color:rgba(255,255,255,0.15)}
+    .visibility-option.selected{border-color:#4ade80;background:rgba(0,200,80,0.06)}
+    .visibility-option.selected.private-sel{border-color:#a78bfa;background:rgba(124,58,237,0.06)}
+    .visibility-option .vo-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .visibility-option .vo-icon.public-icon{background:rgba(5,150,105,0.12)}
+    .visibility-option .vo-icon.public-icon svg{stroke:#34d399}
+    .visibility-option .vo-icon.private-icon{background:rgba(124,58,237,0.12)}
+    .visibility-option .vo-icon.private-icon svg{stroke:#a78bfa}
+    .visibility-option .vo-text{flex:1}
+    .visibility-option .vo-title{color:#fafafa;font-size:0.9rem;font-weight:600}
+    .visibility-option .vo-desc{color:#52525b;font-size:0.78rem}
+    .visibility-option .vo-icon svg{width:20px;height:20px}
     .theme-toggle-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;color:#a1a1aa;font-size:0.85rem;cursor:pointer;transition:all .15s;user-select:none}
     .theme-toggle-item:hover{background:rgba(255,255,255,0.06);color:#fafafa}
     .theme-toggle-item .toggle-label{display:flex;align-items:center;gap:10px}
@@ -90,11 +142,12 @@
     .theme-slider:before{content:'';position:absolute;height:16px;width:16px;right:2px;bottom:2px;background:#a1a1aa;transition:.3s;border-radius:50%}
     .theme-switch input:checked+.theme-slider{background:rgba(250,204,21,0.2);border-color:rgba(250,204,21,0.4)}
     .theme-switch input:checked+.theme-slider:before{transform:translateX(-18px);background:#facc15}
-    /* Light Mode */
     body.light-mode{background:#f5f5f5;color:#1a1a1a}
     body.light-mode .navbar{background:rgba(255,255,255,0.85);border-bottom:1px solid rgba(0,0,0,0.08)}
     body.light-mode .nav-brand h1{color:#1a1a1a}
     body.light-mode .nav-brand h1 span{color:#71717a}
+    body.light-mode .nav-link{color:#52525b}
+    body.light-mode .nav-link:hover{color:#1a1a1a;background:rgba(0,0,0,0.04)}
     body.light-mode .user-pill{background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.1)}
     body.light-mode .user-pill:hover{background:rgba(0,0,0,0.07);border-color:rgba(0,0,0,0.15)}
     body.light-mode .user-pill span{color:#52525b}
@@ -115,6 +168,8 @@
     body.light-mode .page-header h2{color:#1a1a1a}
     body.light-mode .btn-upload{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
     body.light-mode .btn-upload:hover{background:rgba(22,163,74,0.18);box-shadow:0 8px 20px rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.4)}
+    body.light-mode .btn-vercel{background:rgba(0,0,0,0.04);color:#1a1a1a;border-color:rgba(0,0,0,0.12)}
+    body.light-mode .btn-vercel:hover{background:rgba(0,0,0,0.08)}
     body.light-mode .stat-card{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
     body.light-mode .stat-card .stat-label{color:#71717a}
     body.light-mode .stat-card .stat-label svg{stroke:#71717a}
@@ -133,11 +188,39 @@
     body.light-mode .repo-link:hover{color:#52525b}
     body.light-mode .badge-private{background:rgba(124,58,237,0.08);color:#7c3aed;border-color:rgba(124,58,237,0.25)}
     body.light-mode .badge-public{background:rgba(22,163,74,0.08);color:#16a34a;border-color:rgba(22,163,74,0.25)}
+    body.light-mode .repo-actions{border-top-color:rgba(0,0,0,0.06)}
+    body.light-mode .repo-action-btn{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.08);color:#71717a}
+    body.light-mode .repo-action-btn:hover{background:rgba(0,0,0,0.06);color:#1a1a1a}
+    body.light-mode .repo-action-btn.danger:hover{background:rgba(220,38,38,0.06);color:#dc2626;border-color:rgba(220,38,38,0.2)}
     body.light-mode #loading{color:#71717a}
     body.light-mode .spinner{border-color:rgba(0,0,0,0.08);border-top-color:#71717a}
     body.light-mode .empty-state{color:#a1a1aa}
     body.light-mode .empty-state svg{stroke:#d4d4d8}
     body.light-mode footer{color:#a1a1aa;border-top:1px solid rgba(0,0,0,0.06)}
+    body.light-mode .modal{background:#fff;border-color:rgba(0,0,0,0.1)}
+    body.light-mode .modal h3{color:#1a1a1a}
+    body.light-mode .modal .modal-desc{color:#71717a}
+    body.light-mode .modal label{color:#52525b}
+    body.light-mode .modal input[type="text"]{background:rgba(255,255,255,0.8);border-color:rgba(0,0,0,0.12);color:#1a1a1a}
+    body.light-mode .modal .error-msg{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2);color:#dc2626}
+    body.light-mode .modal .success-msg{background:rgba(22,163,74,0.06);border-color:rgba(22,163,74,0.2);color:#16a34a}
+    body.light-mode .btn-cancel{background:rgba(0,0,0,0.04);color:#52525b;border-color:rgba(0,0,0,0.1)}
+    body.light-mode .btn-cancel:hover{background:rgba(0,0,0,0.08);color:#1a1a1a}
+    body.light-mode .btn-primary{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
+    body.light-mode .btn-primary:hover{background:rgba(22,163,74,0.18)}
+    body.light-mode .btn-danger{background:rgba(220,38,38,0.06);color:#dc2626;border-color:rgba(220,38,38,0.2)}
+    body.light-mode .btn-danger:hover{background:rgba(220,38,38,0.12)}
+    body.light-mode .confirm-dialog .confirm-icon{background:rgba(220,38,38,0.06)}
+    body.light-mode .confirm-dialog .confirm-icon svg{stroke:#dc2626}
+    body.light-mode .confirm-dialog h4{color:#1a1a1a}
+    body.light-mode .confirm-dialog p{color:#71717a}
+    body.light-mode .confirm-dialog .confirm-name{color:#dc2626}
+    body.light-mode .visibility-option{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.08)}
+    body.light-mode .visibility-option:hover{border-color:rgba(0,0,0,0.18)}
+    body.light-mode .visibility-option.selected{border-color:#16a34a;background:rgba(22,163,74,0.04)}
+    body.light-mode .visibility-option.selected.private-sel{border-color:#7c3aed;background:rgba(124,58,237,0.04)}
+    body.light-mode .visibility-option .vo-title{color:#1a1a1a}
+    body.light-mode .visibility-option .vo-desc{color:#71717a}
     @media(max-width:600px){
       .navbar{padding:0 16px;height:56px}
       .nav-brand h1{font-size:1rem}
@@ -145,6 +228,7 @@
       .page-header h2{font-size:1.2rem}
       .btn-upload{padding:9px 18px;font-size:0.82rem}
       .btn-upload svg{width:16px;height:16px}
+      .btn-vercel{padding:9px 18px;font-size:0.82rem}
       .stats{grid-template-columns:1fr;gap:10px;margin-bottom:24px}
       .stat-card{padding:18px}
       .stat-card .stat-value{font-size:1.3rem}
@@ -161,7 +245,9 @@
       .user-pill{padding:4px}
       .user-pill .chevron-icon{margin-right:0}
       .account-dropdown{right:auto;left:0;min-width:200px}
+      .modal{padding:24px 18px}
       footer{padding:20px 14px;margin-top:32px}
+      .nav-link span{display:none}
     }
   </style>
 </head>
@@ -173,6 +259,10 @@
       <h1>git<span>-zip</span></h1>
     </a>
     <div class="nav-actions">
+      <a href="/deploy" class="nav-link">
+        <svg viewBox="0 0 76 65" fill="currentColor" style="width:14px;height:14px;stroke:none"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+        <span>Vercel</span>
+      </a>
       <div class="user-pill" id="userPill" onclick="toggleDropdown(event)">
         <img id="userAvatar" src="" alt="">
         <span id="userName"></span>
@@ -215,64 +305,97 @@
     <div id="content" style="display:none">
       <div class="page-header">
         <h2>لوحة التحكم</h2>
-        <a href="/upload" class="btn-upload">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-          رفع ملف ZIP
-        </a>
+        <div class="header-actions">
+          <a href="/deploy" class="btn-vercel">
+            <svg viewBox="0 0 76 65" fill="currentColor" style="stroke:none"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+            نشر على Vercel
+          </a>
+          <a href="/upload" class="btn-upload">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+            رفع ملف ZIP
+          </a>
+        </div>
       </div>
-
       <div class="stats">
-        <div class="stat-card">
-          <div class="stat-label">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-            المستودعات
-          </div>
-          <div class="stat-value" id="repoCount">--</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-            خاصة
-          </div>
-          <div class="stat-value" id="privateCount">--</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
-            عامة
-          </div>
-          <div class="stat-value" id="publicCount">--</div>
-        </div>
+        <div class="stat-card"><div class="stat-label"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>المستودعات</div><div class="stat-value" id="repoCount">--</div></div>
+        <div class="stat-card"><div class="stat-label"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>خاصة</div><div class="stat-value" id="privateCount">--</div></div>
+        <div class="stat-card"><div class="stat-label"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>عامة</div><div class="stat-value" id="publicCount">--</div></div>
       </div>
-
       <div class="section-header">
         <h3>المستودعات</h3>
-        <div class="search-box">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-          <input type="text" id="searchInput" placeholder="بحث في المستودعات...">
-        </div>
+        <div class="search-box"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg><input type="text" id="searchInput" placeholder="بحث في المستودعات..."></div>
       </div>
-
       <div id="reposContainer" class="repos-grid"></div>
-      <div id="emptyState" class="empty-state" style="display:none">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
-        <p>لا توجد مستودعات</p>
+      <div id="emptyState" class="empty-state" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg><p>لا توجد مستودعات</p></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="renameModal">
+    <div class="modal">
+      <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>تغيير اسم المستودع</h3>
+      <p class="modal-desc">ادخل الاسم الجديد للمستودع</p>
+      <div class="error-msg" id="renameError"></div>
+      <div class="success-msg" id="renameSuccess"></div>
+      <div class="form-group"><label>الاسم الجديد</label><input type="text" id="renameInput" placeholder="new-repo-name" dir="ltr"></div>
+      <div class="modal-actions"><button class="btn-sm btn-cancel" onclick="closeModal('renameModal')">الغاء</button><button class="btn-sm btn-primary" id="renameBtn" onclick="submitRename()"><span id="renameBtnText">تغيير الاسم</span><div class="spinner spinner-inline" id="renameSpinner"></div></button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="descModal">
+    <div class="modal">
+      <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>تعديل وصف المستودع</h3>
+      <p class="modal-desc">ادخل الوصف الجديد للمستودع</p>
+      <div class="error-msg" id="descError"></div>
+      <div class="success-msg" id="descSuccess"></div>
+      <div class="form-group"><label>الوصف</label><input type="text" id="descInput" placeholder="وصف المستودع"></div>
+      <div class="modal-actions"><button class="btn-sm btn-cancel" onclick="closeModal('descModal')">الغاء</button><button class="btn-sm btn-primary" id="descBtn" onclick="submitDesc()"><span id="descBtnText">حفظ الوصف</span><div class="spinner spinner-inline" id="descSpinner"></div></button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="visibilityModal">
+    <div class="modal">
+      <h3><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>تغيير خصوصية المستودع</h3>
+      <p class="modal-desc">اختر مستوى الخصوصية للمستودع</p>
+      <div class="error-msg" id="visibilityError"></div>
+      <div class="success-msg" id="visibilitySuccess"></div>
+      <div class="visibility-option selected" id="visPublic" onclick="selectVisibility(false)">
+        <div class="vo-icon public-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg></div>
+        <div class="vo-text"><div class="vo-title">عام (Public)</div><div class="vo-desc">يمكن لاي شخص رؤية هذا المستودع</div></div>
+      </div>
+      <div class="visibility-option" id="visPrivate" onclick="selectVisibility(true)">
+        <div class="vo-icon private-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg></div>
+        <div class="vo-text"><div class="vo-title">خاص (Private)</div><div class="vo-desc">فقط انت والمتعاونون يمكنهم الوصول</div></div>
+      </div>
+      <div class="modal-actions"><button class="btn-sm btn-cancel" onclick="closeModal('visibilityModal')">الغاء</button><button class="btn-sm btn-primary" id="visibilityBtn" onclick="submitVisibility()"><span id="visibilityBtnText">تغيير الخصوصية</span><div class="spinner spinner-inline" id="visibilitySpinner"></div></button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="deleteModal">
+    <div class="modal">
+      <div class="confirm-dialog">
+        <div class="confirm-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
+        <h4>حذف المستودع</h4>
+        <p>هل انت متأكد من حذف المستودع <span class="confirm-name" id="deleteRepoName"></span>؟<br>هذا الاجراء لا يمكن التراجع عنه وسيتم حذف جميع الملفات والتاريخ.</p>
+        <div class="error-msg" id="deleteError" style="text-align:right"></div>
+        <div class="modal-actions">
+          <button class="btn-sm btn-cancel" onclick="closeModal('deleteModal')">الغاء</button>
+          <button class="btn-sm btn-danger" id="deleteBtn" onclick="submitDelete()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            <span id="deleteBtnText">حذف نهائي</span>
+            <div class="spinner spinner-inline" id="deleteSpinner"></div>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    const GH_ICON='<svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
-    const GH_ICON_SM='<svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none;width:16px;height:16px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
-    const langColors={JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',CSS:'#563d7c',HTML:'#e34c26',Shell:'#89e051',C:'#555555','C++':'#f34b7d','C#':'#178600',Swift:'#F05138',Kotlin:'#A97BFF',Dart:'#00B4AB',Vue:'#41b883',Svelte:'#ff3e00'};
-    let allRepos=[];
-
-    const cachedUser=JSON.parse(localStorage.getItem('gitzip_user')||'null');
-    if(cachedUser){
-      applyUserData(cachedUser);
-      document.getElementById('loading').style.display='none';
-      document.getElementById('content').style.display='block';
-    }
+    var GH_ICON='<svg viewBox="0 0 24 24" fill="#a1a1aa" style="stroke:none;width:18px;height:18px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+    var GH_ICON_SM='<svg viewBox="0 0 24 24" fill="currentColor" style="stroke:none;width:16px;height:16px"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>';
+    var langColors={JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',Java:'#b07219',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',CSS:'#563d7c',HTML:'#e34c26',Shell:'#89e051',C:'#555555','C++':'#f34b7d','C#':'#178600',Swift:'#F05138',Kotlin:'#A97BFF',Dart:'#00B4AB',Vue:'#41b883',Svelte:'#ff3e00'};
+    var allRepos=[],activeRepoFullName='',activeRepoOwner='',activeRepoName='',visibilityIsPrivate=false;
+    var cachedUser=JSON.parse(localStorage.getItem('gitzip_user')||'null');
+    if(cachedUser){applyUserData(cachedUser);document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';}
 
     function applyUserData(d){
       document.getElementById('userAvatar').src=d.avatar;
@@ -283,117 +406,90 @@
       document.getElementById('dropdownUser').textContent='@'+d.username;
       document.getElementById('githubProfileLink').href='https://github.com/'+d.username;
     }
-
-    function toggleDropdown(e){
-      e.stopPropagation();
-      const dd=document.getElementById('accountDropdown'),pill=document.getElementById('userPill'),ov=document.getElementById('dropdownOverlay');
-      const isOpen=dd.classList.contains('show');
-      dd.classList.toggle('show',!isOpen);
-      pill.classList.toggle('open',!isOpen);
-      ov.classList.toggle('show',!isOpen);
-    }
-    function closeDropdown(){
-      document.getElementById('accountDropdown').classList.remove('show');
-      document.getElementById('userPill').classList.remove('open');
-      document.getElementById('dropdownOverlay').classList.remove('show');
-    }
-
-    function timeAgo(dateStr){
-      const diff=Date.now()-new Date(dateStr).getTime();
-      const mins=Math.floor(diff/60000);
-      if(mins<60) return mins+' دقيقة';
-      const hrs=Math.floor(mins/60);
-      if(hrs<24) return hrs+' ساعة';
-      const days=Math.floor(hrs/24);
-      if(days<30) return days+' يوم';
-      return Math.floor(days/30)+' شهر';
-    }
+    function toggleDropdown(e){e.stopPropagation();var dd=document.getElementById('accountDropdown'),pill=document.getElementById('userPill'),ov=document.getElementById('dropdownOverlay');var o=dd.classList.contains('show');dd.classList.toggle('show',!o);pill.classList.toggle('open',!o);ov.classList.toggle('show',!o);}
+    function closeDropdown(){document.getElementById('accountDropdown').classList.remove('show');document.getElementById('userPill').classList.remove('open');document.getElementById('dropdownOverlay').classList.remove('show');}
+    function timeAgo(d){var x=Date.now()-new Date(d).getTime(),m=Math.floor(x/60000);if(m<60)return m+' دقيقة';var h=Math.floor(m/60);if(h<24)return h+' ساعة';var dy=Math.floor(h/24);if(dy<30)return dy+' يوم';return Math.floor(dy/30)+' شهر';}
+    function escapeAttr(s){return(s||'').replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
     function renderRepos(repos){
-      const container=document.getElementById('reposContainer');
-      const empty=document.getElementById('emptyState');
-      if(!repos.length){container.innerHTML='';empty.style.display='block';return;}
-      empty.style.display='none';
-      container.innerHTML=repos.map(r=>`
-        <div class="repo-card" onclick="window.location.href='/upload?repo=${encodeURIComponent(r.full_name)}'">
-          <a href="${r.html_url}" target="_blank" class="repo-link" onclick="event.stopPropagation()">${GH_ICON_SM}</a>
-          <div class="repo-top">
-            <div class="repo-name">${GH_ICON}<h4>${r.name}</h4></div>
-            <span class="repo-badge ${r.private?'badge-private':'badge-public'}">${r.private?'خاص':'عام'}</span>
-          </div>
-          <p class="repo-desc">${r.description||'بدون وصف'}</p>
-          <div class="repo-meta">
-            ${r.language?`<div class="meta-item"><span class="lang-dot" style="background:${langColors[r.language]||'#71717a'}"></span>${r.language}</div>`:''}
-            <div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>${r.stargazers_count}</div>
-            <div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${timeAgo(r.updated_at)}</div>
-          </div>
-        </div>`).join('');
+      var c=document.getElementById('reposContainer'),e=document.getElementById('emptyState');
+      if(!repos.length){c.innerHTML='';e.style.display='block';return;}
+      e.style.display='none';
+      c.innerHTML=repos.map(function(r){
+        var p=r.full_name.split('/'),o=p[0],n=p[1],de=escapeAttr(r.description||'');
+        return '<div class="repo-card">'+
+          '<a href="'+r.html_url+'" target="_blank" class="repo-link" onclick="event.stopPropagation()">'+GH_ICON_SM+'</a>'+
+          '<div class="repo-top"><div class="repo-name" onclick="window.location.href=\'/upload?repo='+encodeURIComponent(r.full_name)+'\'">'+GH_ICON+'<h4>'+r.name+'</h4></div><span class="repo-badge '+(r.private?'badge-private':'badge-public')+'">'+(r.private?'خاص':'عام')+'</span></div>'+
+          '<p class="repo-desc">'+(r.description||'بدون وصف')+'</p>'+
+          '<div class="repo-meta">'+(r.language?'<div class="meta-item"><span class="lang-dot" style="background:'+(langColors[r.language]||'#71717a')+'"></span>'+r.language+'</div>':'')+
+          '<div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/></svg>'+r.stargazers_count+'</div>'+
+          '<div class="meta-item"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'+timeAgo(r.updated_at)+'</div></div>'+
+          '<div class="repo-actions">'+
+          '<button class="repo-action-btn" onclick="event.stopPropagation();openRenameModal(\''+escapeAttr(o)+'\',\''+escapeAttr(n)+'\',\''+escapeAttr(r.full_name)+'\')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>تغيير الاسم</button>'+
+          '<button class="repo-action-btn" onclick="event.stopPropagation();openDescModal(\''+escapeAttr(o)+'\',\''+escapeAttr(n)+'\',\''+escapeAttr(r.full_name)+'\',\''+de+'\')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>تعديل الوصف</button>'+
+          '<button class="repo-action-btn" onclick="event.stopPropagation();openVisibilityModal(\''+escapeAttr(o)+'\',\''+escapeAttr(n)+'\',\''+escapeAttr(r.full_name)+'\','+r.private+')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>'+(r.private?'جعله عام':'جعله خاص')+'</button>'+
+          '<button class="repo-action-btn danger" onclick="event.stopPropagation();openDeleteModal(\''+escapeAttr(o)+'\',\''+escapeAttr(n)+'\',\''+escapeAttr(r.full_name)+'\')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>حذف</button>'+
+          '</div></div>';
+      }).join('');
     }
 
-    document.getElementById('searchInput').addEventListener('input',function(){
-      const q=this.value.toLowerCase();
-      renderRepos(allRepos.filter(r=>r.name.toLowerCase().includes(q)||(r.description||'').toLowerCase().includes(q)));
-    });
+    document.getElementById('searchInput').addEventListener('input',function(){var q=this.value.toLowerCase();renderRepos(allRepos.filter(function(r){return r.name.toLowerCase().indexOf(q)!==-1||(r.description||'').toLowerCase().indexOf(q)!==-1}));});
 
-    async function apiFetch(url, opts){
-      try {
-        const res = await fetch(url, opts);
-        if(res.status===401){
-          localStorage.removeItem('gitzip_user');
-          window.location.href='/';
-          throw new Error('auth');
-        }
-        return res.json();
-      } catch(e) {
-        if(e.message==='auth') throw e;
-        throw new Error('network');
-      }
+    function apiFetch(u,o){return fetch(u,o).then(function(r){if(r.status===401){localStorage.removeItem('gitzip_user');window.location.href='/';throw new Error('auth');}return r.json();});}
+    function openModal(id){document.getElementById(id).classList.add('show');}
+    function closeModal(id){document.getElementById(id).classList.remove('show');var e=document.getElementById(id).querySelectorAll('.error-msg,.success-msg');for(var i=0;i<e.length;i++)e[i].style.display='none';}
+
+    function openRenameModal(o,n,f){activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;document.getElementById('renameInput').value=n;openModal('renameModal');}
+    function submitRename(){
+      var nn=document.getElementById('renameInput').value.trim();
+      if(!nn){document.getElementById('renameError').textContent='الاسم الجديد مطلوب';document.getElementById('renameError').style.display='block';return;}
+      var b=document.getElementById('renameBtn');b.disabled=true;document.getElementById('renameBtnText').style.display='none';document.getElementById('renameSpinner').style.display='block';
+      document.getElementById('renameError').style.display='none';document.getElementById('renameSuccess').style.display='none';
+      apiFetch('/api/github/repos/'+activeRepoOwner+'/'+activeRepoName+'/rename',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({newName:nn})})
+      .then(function(d){if(d.success){document.getElementById('renameSuccess').textContent='تم تغيير الاسم بنجاح الى '+d.repo.name;document.getElementById('renameSuccess').style.display='block';setTimeout(function(){closeModal('renameModal');refreshRepos();},1200);}else{document.getElementById('renameError').textContent=d.message;document.getElementById('renameError').style.display='block';}b.disabled=false;document.getElementById('renameBtnText').style.display='inline';document.getElementById('renameSpinner').style.display='none';})
+      .catch(function(){document.getElementById('renameError').textContent='حدث خطأ';document.getElementById('renameError').style.display='block';b.disabled=false;document.getElementById('renameBtnText').style.display='inline';document.getElementById('renameSpinner').style.display='none';});
     }
 
-    async function init(){
-      try{
-        const[meRes,reposRes]=await Promise.all([
-          apiFetch('/api/me'),
-          apiFetch('/api/github/repos')
-        ]);
-        localStorage.setItem('gitzip_user',JSON.stringify(meRes));
-        applyUserData(meRes);
-        if(reposRes.success){
-          allRepos=reposRes.repos;
-          document.getElementById('repoCount').textContent=allRepos.length;
-          document.getElementById('privateCount').textContent=allRepos.filter(r=>r.private).length;
-          document.getElementById('publicCount').textContent=allRepos.filter(r=>!r.private).length;
-          renderRepos(allRepos);
-        }
-        document.getElementById('loading').style.display='none';
-        document.getElementById('content').style.display='block';
-      }catch(err){
-        if(err.message==='auth') return;
-        // On network/other errors, show cached data instead of redirecting
-        if(cachedUser){
-          document.getElementById('loading').style.display='none';
-          document.getElementById('content').style.display='block';
-        } else {
-          document.getElementById('loading').innerHTML='<p style="color:#fca5a5">فشل الاتصال بالخادم. <a href="/" style="color:#4ade80">اعادة المحاولة</a></p>';
-        }
-      }
+    function openDescModal(o,n,f,desc){activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;document.getElementById('descInput').value=desc;openModal('descModal');}
+    function submitDesc(){
+      var ds=document.getElementById('descInput').value.trim();
+      var b=document.getElementById('descBtn');b.disabled=true;document.getElementById('descBtnText').style.display='none';document.getElementById('descSpinner').style.display='block';
+      document.getElementById('descError').style.display='none';document.getElementById('descSuccess').style.display='none';
+      apiFetch('/api/github/repos/'+activeRepoOwner+'/'+activeRepoName+'/description',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({description:ds})})
+      .then(function(d){if(d.success){document.getElementById('descSuccess').textContent='تم تحديث الوصف بنجاح';document.getElementById('descSuccess').style.display='block';setTimeout(function(){closeModal('descModal');refreshRepos();},1200);}else{document.getElementById('descError').textContent=d.message;document.getElementById('descError').style.display='block';}b.disabled=false;document.getElementById('descBtnText').style.display='inline';document.getElementById('descSpinner').style.display='none';})
+      .catch(function(){document.getElementById('descError').textContent='حدث خطأ';document.getElementById('descError').style.display='block';b.disabled=false;document.getElementById('descBtnText').style.display='inline';document.getElementById('descSpinner').style.display='none';});
     }
-    init();
 
-    // Theme management
-    function toggleTheme(){
-      const isLight=document.body.classList.toggle('light-mode');
-      localStorage.setItem('gitzip_theme',isLight?'light':'dark');
-      document.getElementById('themeToggle').checked=isLight;
+    function openVisibilityModal(o,n,f,ip){activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;visibilityIsPrivate=ip;updateVisibilityUI();openModal('visibilityModal');}
+    function selectVisibility(ip){visibilityIsPrivate=ip;updateVisibilityUI();}
+    function updateVisibilityUI(){var pu=document.getElementById('visPublic'),pr=document.getElementById('visPrivate');pu.classList.toggle('selected',!visibilityIsPrivate);pr.classList.toggle('selected',visibilityIsPrivate);pr.classList.toggle('private-sel',visibilityIsPrivate);}
+    function submitVisibility(){
+      var b=document.getElementById('visibilityBtn');b.disabled=true;document.getElementById('visibilityBtnText').style.display='none';document.getElementById('visibilitySpinner').style.display='block';
+      document.getElementById('visibilityError').style.display='none';document.getElementById('visibilitySuccess').style.display='none';
+      apiFetch('/api/github/repos/'+activeRepoOwner+'/'+activeRepoName+'/visibility',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({isPrivate:visibilityIsPrivate})})
+      .then(function(d){if(d.success){document.getElementById('visibilitySuccess').textContent='تم تغيير الخصوصية بنجاح';document.getElementById('visibilitySuccess').style.display='block';setTimeout(function(){closeModal('visibilityModal');refreshRepos();},1200);}else{document.getElementById('visibilityError').textContent=d.message;document.getElementById('visibilityError').style.display='block';}b.disabled=false;document.getElementById('visibilityBtnText').style.display='inline';document.getElementById('visibilitySpinner').style.display='none';})
+      .catch(function(){document.getElementById('visibilityError').textContent='حدث خطأ';document.getElementById('visibilityError').style.display='block';b.disabled=false;document.getElementById('visibilityBtnText').style.display='inline';document.getElementById('visibilitySpinner').style.display='none';});
     }
-    function applyTheme(){
-      const theme=localStorage.getItem('gitzip_theme');
-      if(theme==='light'){
-        document.body.classList.add('light-mode');
-        document.getElementById('themeToggle').checked=true;
-      }
+
+    function openDeleteModal(o,n,f){activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;document.getElementById('deleteRepoName').textContent=f;openModal('deleteModal');}
+    function submitDelete(){
+      var b=document.getElementById('deleteBtn');b.disabled=true;document.getElementById('deleteBtnText').style.display='none';document.getElementById('deleteSpinner').style.display='block';
+      document.getElementById('deleteError').style.display='none';
+      apiFetch('/api/github/repos/'+activeRepoOwner+'/'+activeRepoName,{method:'DELETE'})
+      .then(function(d){if(d.success){closeModal('deleteModal');refreshRepos();}else{document.getElementById('deleteError').textContent=d.message;document.getElementById('deleteError').style.display='block';}b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';})
+      .catch(function(){document.getElementById('deleteError').textContent='حدث خطأ';document.getElementById('deleteError').style.display='block';b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';});
     }
-    applyTheme();
+
+    function refreshRepos(){apiFetch('/api/github/repos').then(function(d){if(d.success){allRepos=d.repos;document.getElementById('repoCount').textContent=allRepos.length;document.getElementById('privateCount').textContent=allRepos.filter(function(r){return r.private}).length;document.getElementById('publicCount').textContent=allRepos.filter(function(r){return !r.private}).length;renderRepos(allRepos);}}).catch(function(){});}
+
+    Promise.all([apiFetch('/api/me'),apiFetch('/api/github/repos')]).then(function(res){
+      var me=res[0],rr=res[1];localStorage.setItem('gitzip_user',JSON.stringify(me));applyUserData(me);
+      if(rr.success){allRepos=rr.repos;document.getElementById('repoCount').textContent=allRepos.length;document.getElementById('privateCount').textContent=allRepos.filter(function(r){return r.private}).length;document.getElementById('publicCount').textContent=allRepos.filter(function(r){return !r.private}).length;renderRepos(allRepos);}
+      document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';
+    }).catch(function(err){if(err&&err.message==='auth')return;if(cachedUser){document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';}else{document.getElementById('loading').innerHTML='<p style="color:#fca5a5">فشل الاتصال بالخادم. <a href="/" style="color:#4ade80">اعادة المحاولة</a></p>';}});
+
+    function toggleTheme(){var l=document.body.classList.toggle('light-mode');localStorage.setItem('gitzip_theme',l?'light':'dark');document.getElementById('themeToggle').checked=l;}
+    (function(){var t=localStorage.getItem('gitzip_theme');if(t==='light'){document.body.classList.add('light-mode');document.getElementById('themeToggle').checked=true;}})();
   </script>
   <footer>&copy; Aite.studio 2026</footer>
 </body>
