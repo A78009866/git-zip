@@ -51,9 +51,9 @@
     .tab-content.active{display:block}
     .form-group{margin-bottom:18px}
     label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
-    select,input[type="text"],input[type="url"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+    select,input[type="text"],input[type="url"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
     select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2352525b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:34px}
-    select:focus,input:focus{border-color:rgba(255,255,255,0.2)}
+    select:focus,input:focus{border-color:rgba(255,255,255,0.35)}
     .checkbox-group{display:flex;align-items:center;gap:8px;margin-bottom:18px}
     .checkbox-group input[type="checkbox"]{accent-color:#a1a1aa;width:16px;height:16px}
     .checkbox-group label{margin-bottom:0;font-size:0.85rem}
@@ -119,8 +119,8 @@
     .selected-repo-banner .srb-clear{background:none;border:1px solid rgba(255,255,255,0.1);color:#a1a1aa;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.78rem;font-weight:500;transition:all .2s;font-family:inherit}
     .selected-repo-banner .srb-clear:hover{border-color:rgba(248,113,113,0.4);color:#f87171;background:rgba(248,113,113,0.06)}
     .url-field-inline{margin-bottom:0}
-    .url-field-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:4px 4px 4px 14px;transition:border-color .2s}
-    .url-field-row:focus-within{border-color:rgba(255,255,255,0.2)}
+    .url-field-row{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:4px 4px 4px 14px;transition:border-color .2s}
+    .url-field-row:focus-within{border-color:rgba(255,255,255,0.35)}
     .url-field-icon{flex-shrink:0;color:#52525b}
     .url-inline-input{flex:1;background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;padding:8px 4px;font-family:inherit;min-width:0}
     .url-inline-input::placeholder{color:#3f3f46}
@@ -194,9 +194,9 @@
     body.light-mode .tab.active{background:rgba(0,0,0,0.06);color:#1a1a1a}
     body.light-mode .tab:hover:not(.active){color:#71717a}
     body.light-mode label{color:#52525b}
-    body.light-mode select,body.light-mode input[type="text"],body.light-mode input[type="url"]{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.12);color:#1a1a1a}
-    body.light-mode select:focus,body.light-mode input:focus{border-color:rgba(0,0,0,0.25)}
-    body.light-mode .search-mini{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1)}
+    body.light-mode select,body.light-mode input[type="text"],body.light-mode input[type="url"]{background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.25);color:#1a1a1a}
+    body.light-mode select:focus,body.light-mode input:focus{border-color:rgba(0,0,0,0.45)}
+    body.light-mode .search-mini{background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.25)}
     body.light-mode .search-mini svg{stroke:#71717a}
     body.light-mode .search-mini input{color:#1a1a1a}
     body.light-mode .search-mini input::placeholder{color:#a1a1aa}
@@ -207,8 +207,8 @@
     body.light-mode .repo-select-card .rsc-info p{color:#71717a}
     body.light-mode .repo-select-card.selected{border-color:#16a34a;background:rgba(22,163,74,0.04)}
     body.light-mode .repo-select-card.selected .rsc-info h4{color:#16a34a}
-    body.light-mode .url-field-row{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.1)}
-    body.light-mode .url-field-row:focus-within{border-color:rgba(0,0,0,0.25)}
+    body.light-mode .url-field-row{background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.25)}
+    body.light-mode .url-field-row:focus-within{border-color:rgba(0,0,0,0.45)}
     body.light-mode .url-field-icon{color:#71717a}
     body.light-mode .url-inline-input{color:#1a1a1a}
     body.light-mode .url-inline-input::placeholder{color:#a1a1aa}
@@ -375,7 +375,7 @@
         <div class="url-field-inline">
           <div class="url-field-row">
             <div class="url-field-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-2.04a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.34 8.798"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px;stroke:none"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
             </div>
             <input type="url" id="repoUrlInput" placeholder="https://github.com/owner/repo" dir="ltr" class="url-inline-input">
             <button class="url-inline-btn" onclick="useRepoUrl()">

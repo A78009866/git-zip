@@ -108,9 +108,9 @@
     .modal .modal-desc{color:#52525b;font-size:0.85rem;margin-bottom:24px}
     .modal .form-group{margin-bottom:18px}
     .modal label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
-    .modal select,.modal input[type="text"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+    .modal select,.modal input[type="text"]{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
     .modal select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2352525b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:34px}
-    .modal select:focus,.modal input:focus{border-color:rgba(255,255,255,0.2)}
+    .modal select:focus,.modal input:focus{border-color:rgba(255,255,255,0.35)}
     .modal-actions{display:flex;gap:10px;margin-top:24px}
     .modal-actions .btn-sm{flex:1;justify-content:center;padding:12px}
     .btn-cancel{background:rgba(255,255,255,0.04);color:#a1a1aa;border-color:rgba(255,255,255,0.1)}
@@ -125,7 +125,7 @@
     .modal .repos-scroll::-webkit-scrollbar{width:4px}
     .modal .repos-scroll::-webkit-scrollbar-track{background:transparent}
     .modal .repos-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
-    .modal .search-mini{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+    .modal .search-mini{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px 14px;margin-bottom:12px}
     .modal .search-mini svg{width:16px;height:16px;stroke:#52525b;flex-shrink:0}
     .modal .search-mini input{background:none;border:none;outline:none;color:#e4e4e7;font-size:0.85rem;width:100%}
     .modal .search-mini input::placeholder{color:#3f3f46}
@@ -218,7 +218,7 @@
     body.light-mode .connect-card .steps-list ol{color:#52525b}
     body.light-mode .connect-card .steps-list a{color:#16a34a}
     body.light-mode .connect-card .steps-list code{background:rgba(0,0,0,0.05);color:#1a1a1a}
-    body.light-mode .token-input-row input{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.12);color:#1a1a1a}
+    body.light-mode .token-input-row input{background:rgba(255,255,255,0.95);border:1px solid rgba(0,0,0,0.25);color:#1a1a1a}
     body.light-mode .token-input-row button{background:rgba(22,163,74,0.1);color:#16a34a;border-color:rgba(22,163,74,0.3)}
     body.light-mode .vercel-banner{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08)}
     body.light-mode .vercel-banner .vb-user{color:#1a1a1a}
@@ -245,7 +245,7 @@
     body.light-mode .modal h3{color:#1a1a1a}
     body.light-mode .modal .modal-desc{color:#71717a}
     body.light-mode .modal label{color:#52525b}
-    body.light-mode .modal select,.modal input[type="text"]{background:rgba(255,255,255,0.8);border-color:rgba(0,0,0,0.12);color:#1a1a1a}
+    body.light-mode .modal select,body.light-mode .modal input[type="text"]{background:rgba(255,255,255,0.95);border-color:rgba(0,0,0,0.25);color:#1a1a1a}
     body.light-mode .modal .error-msg{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2);color:#dc2626}
     body.light-mode .modal .success-msg{background:rgba(22,163,74,0.06);border-color:rgba(22,163,74,0.2);color:#16a34a}
     body.light-mode .repo-select-card{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.08)}
@@ -269,7 +269,7 @@
     body.light-mode .empty-state svg{stroke:#d4d4d8}
     body.light-mode #loading{color:#71717a}
     body.light-mode .spinner{border-color:rgba(0,0,0,0.08);border-top-color:#71717a}
-    body.light-mode .modal .search-mini{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.08)}
+    body.light-mode .modal .search-mini{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.25)}
     body.light-mode .modal .search-mini input{color:#1a1a1a}
     body.light-mode footer{color:#a1a1aa;border-top:1px solid rgba(0,0,0,0.06)}
     @media(max-width:600px){
@@ -649,7 +649,7 @@
       container.innerHTML = projects.map(p => {
         const fw = getFrameworkInfo(p.framework);
         const st = p.latestDeployment ? getStatusInfo(p.latestDeployment.state) : null;
-        const url = p.latestDeployment?.url ? `https://${p.latestDeployment.url}` : `https://${p.name}.vercel.app`;
+        const url = `https://${p.name}.vercel.app`;
         const repoInfo = p.link ? `${p.link.org}/${p.link.repo}` : '';
 
         return `
