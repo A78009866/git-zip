@@ -875,19 +875,56 @@ app.post('/api/vercel/projects/:projectId/redeploy', requireApiAuth, async (req,
 
 // ─── GitHub Repo Management ───
 
-// Delete a repository
+// Delete a repository (with ownership verification & confirmation)
 app.delete('/api/github/repos/:owner/:repo', requireApiAuth, async (req, res) => {
   try {
     const { owner, repo } = req.params;
-    await axios.delete(`https://api.github.com/repos/${owner}/${repo}`, {
-      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
-    });
-    res.json({ success: true });
+    const { confirmName } = req.body || {};
+
+    // Input validation: only allow valid GitHub username/repo name characters
+    const validPattern = /^[a-zA-Z0-9._-]+$/;
+    if (!validPattern.test(owner) || !validPattern.test(repo)) {
+      return res.json({ success: false, message: 'اسم المستودع او المالك يحتوي على احرف غير صالحة' });
+    }
+
+    // Require confirmation name to match (prevents accidental deletion)
+    const expectedFullName = `${owner}/${repo}`;
+    if (!confirmName || confirmName !== expectedFullName) {
+      return res.json({ success: false, message: 'يجب كتابة اسم المستودع بالكامل للتأكيد' });
+    }
+
+    const headers = { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' };
+
+    // Verify ownership: only the repo owner can delete
+    let repoData;
+    try {
+      const repoRes = await axios.get(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+      repoData = repoRes.data;
+    } catch (checkErr) {
+      if (checkErr.response?.status === 404) {
+        return res.json({ success: false, message: 'المستودع غير موجود او ليس لديك صلاحية الوصول' });
+      }
+      throw checkErr;
+    }
+
+    // Verify the authenticated user is the owner
+    if (!repoData.permissions || !repoData.permissions.admin) {
+      return res.json({ success: false, message: 'ليس لديك صلاحية حذف هذا المستودع. يجب ان تكون مالك المستودع (admin).' });
+    }
+
+    // Proceed with deletion
+    await axios.delete(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+    res.json({ success: true, message: 'تم حذف المستودع بنجاح' });
   } catch (err) {
     const status = err.response?.status;
     let msg = 'فشل حذف المستودع';
-    if (status === 403) msg = 'ليس لديك صلاحية حذف هذا المستودع. يجب ان تكون مالك المستودع.';
-    else if (status === 404) msg = 'المستودع غير موجود';
+    if (status === 403) {
+      msg = err.response?.data?.message?.includes('Must have admin rights')
+        ? 'ليس لديك صلاحية حذف هذا المستودع. يجب ان تكون مالك المستودع.'
+        : 'تم رفض الوصول. تأكد من ان لديك صلاحيات الحذف.';
+    } else if (status === 404) {
+      msg = 'المستودع غير موجود';
+    }
     res.json({ success: false, message: msg });
   }
 });

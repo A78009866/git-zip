@@ -114,11 +114,39 @@
     .modal .success-msg{background:rgba(5,150,105,0.12);border:1px solid rgba(5,150,105,0.25);color:#6ee7b7;padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;display:none}
     .modal .spinner-inline{width:18px;height:18px;border-width:2px;margin:0;display:none}
     .confirm-dialog{text-align:center;padding:8px}
-    .confirm-dialog .confirm-icon{width:56px;height:56px;margin:0 auto 16px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center}
-    .confirm-dialog .confirm-icon svg{width:28px;height:28px;stroke:#f87171}
-    .confirm-dialog h4{color:#fafafa;font-size:1.1rem;margin-bottom:8px}
-    .confirm-dialog p{color:#52525b;font-size:0.88rem;margin-bottom:20px;line-height:1.6}
-    .confirm-dialog .confirm-name{color:#f87171;font-weight:600}
+    .confirm-dialog .confirm-icon{width:64px;height:64px;margin:0 auto 18px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pulseWarn 2s ease-in-out infinite}
+    @keyframes pulseWarn{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.15)}50%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
+    .confirm-dialog .confirm-icon svg{width:30px;height:30px;stroke:#f87171}
+    .confirm-dialog h4{color:#fafafa;font-size:1.15rem;margin-bottom:8px;font-weight:700}
+    .confirm-dialog p{color:#52525b;font-size:0.88rem;margin-bottom:16px;line-height:1.6}
+    .confirm-dialog .confirm-name{color:#f87171;font-weight:700;direction:ltr;unicode-bidi:bidi-override}
+    .confirm-dialog .confirm-input-wrap{text-align:right;margin-bottom:16px}
+    .confirm-dialog .confirm-input-wrap label{display:block;margin-bottom:8px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
+    .confirm-dialog .confirm-input-wrap label strong{color:#f87171;font-weight:700;direction:ltr;unicode-bidi:bidi-override}
+    .confirm-dialog .confirm-input-wrap input{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;direction:ltr;text-align:left}
+    .confirm-dialog .confirm-input-wrap input:focus{border-color:rgba(239,68,68,0.5)}
+    .confirm-dialog .confirm-input-wrap input.match{border-color:rgba(239,68,68,0.8)}
+    .confirm-dialog .delete-warning-box{background:rgba(127,29,29,0.08);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;text-align:right}
+    .confirm-dialog .delete-warning-box svg{width:18px;height:18px;stroke:#f87171;flex-shrink:0;margin-top:2px}
+    .confirm-dialog .delete-warning-box span{color:#fca5a5;font-size:0.8rem;line-height:1.5}
+    .confirm-dialog .repo-info-preview{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 16px;margin-bottom:16px;text-align:right}
+    .confirm-dialog .repo-info-preview .rip-icon{width:36px;height:36px;background:rgba(239,68,68,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .confirm-dialog .repo-info-preview .rip-icon svg{width:18px;height:18px;stroke:#f87171}
+    .confirm-dialog .repo-info-preview .rip-details{flex:1;min-width:0}
+    .confirm-dialog .repo-info-preview .rip-name{color:#fafafa;font-size:0.88rem;font-weight:600;direction:ltr;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .confirm-dialog .repo-info-preview .rip-meta{color:#52525b;font-size:0.75rem;margin-top:2px}
+    .btn-danger-delete{background:rgba(239,68,68,0.1);color:#71717a;border-color:rgba(239,68,68,0.15);cursor:not-allowed;transition:all .3s}
+    .btn-danger-delete.enabled{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3);cursor:pointer}
+    .btn-danger-delete.enabled:hover{background:rgba(239,68,68,0.25);border-color:rgba(239,68,68,0.45);transform:translateY(-1px);box-shadow:0 4px 15px rgba(239,68,68,0.2)}
+    .toast-container{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:500;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+    .toast{padding:14px 24px;border-radius:12px;font-size:0.88rem;font-weight:500;display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn .4s ease-out;box-shadow:0 10px 40px rgba(0,0,0,0.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);max-width:400px}
+    .toast.success{background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.3);color:#6ee7b7}
+    .toast.error{background:rgba(127,29,29,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+    .toast svg{width:20px;height:20px;flex-shrink:0}
+    .toast.removing{animation:toastOut .3s ease-in forwards}
+    @keyframes toastIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+    @keyframes repoFadeOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(0.95);max-height:0;padding:0;margin:0;overflow:hidden}}
     .visibility-option{display:flex;align-items:center;gap:12px;padding:14px;background:rgba(0,0,0,0.3);border:2px solid rgba(255,255,255,0.08);border-radius:12px;cursor:pointer;transition:all .25s;margin-bottom:8px}
     .visibility-option:hover{border-color:rgba(255,255,255,0.15)}
     .visibility-option.selected{border-color:#4ade80;background:rgba(0,200,80,0.06)}
@@ -215,6 +243,23 @@
     body.light-mode .confirm-dialog h4{color:#1a1a1a}
     body.light-mode .confirm-dialog p{color:#71717a}
     body.light-mode .confirm-dialog .confirm-name{color:#dc2626}
+    body.light-mode .confirm-dialog .confirm-input-wrap label{color:#52525b}
+    body.light-mode .confirm-dialog .confirm-input-wrap label strong{color:#dc2626}
+    body.light-mode .confirm-dialog .confirm-input-wrap input{background:rgba(255,255,255,0.95);border-color:rgba(0,0,0,0.25);color:#1a1a1a}
+    body.light-mode .confirm-dialog .confirm-input-wrap input:focus{border-color:rgba(220,38,38,0.5)}
+    body.light-mode .confirm-dialog .confirm-input-wrap input.match{border-color:rgba(220,38,38,0.8)}
+    body.light-mode .confirm-dialog .delete-warning-box{background:rgba(220,38,38,0.04);border-color:rgba(220,38,38,0.15)}
+    body.light-mode .confirm-dialog .delete-warning-box span{color:#dc2626}
+    body.light-mode .confirm-dialog .repo-info-preview{background:rgba(0,0,0,0.02);border-color:rgba(0,0,0,0.08)}
+    body.light-mode .confirm-dialog .repo-info-preview .rip-icon{background:rgba(220,38,38,0.06)}
+    body.light-mode .confirm-dialog .repo-info-preview .rip-icon svg{stroke:#dc2626}
+    body.light-mode .confirm-dialog .repo-info-preview .rip-name{color:#1a1a1a}
+    body.light-mode .confirm-dialog .repo-info-preview .rip-meta{color:#a1a1aa}
+    body.light-mode .btn-danger-delete{background:rgba(220,38,38,0.06);color:#a1a1aa;border-color:rgba(220,38,38,0.1)}
+    body.light-mode .btn-danger-delete.enabled{background:rgba(220,38,38,0.08);color:#dc2626;border-color:rgba(220,38,38,0.25)}
+    body.light-mode .btn-danger-delete.enabled:hover{background:rgba(220,38,38,0.15);box-shadow:0 4px 15px rgba(220,38,38,0.12)}
+    body.light-mode .toast.success{background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.2);color:#16a34a}
+    body.light-mode .toast.error{background:rgba(220,38,38,0.06);border-color:rgba(220,38,38,0.2);color:#dc2626}
     body.light-mode .visibility-option{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.08)}
     body.light-mode .visibility-option:hover{border-color:rgba(0,0,0,0.18)}
     body.light-mode .visibility-option.selected{border-color:#16a34a;background:rgba(22,163,74,0.04)}
@@ -370,18 +415,34 @@
     </div>
   </div>
 
+  <div class="toast-container" id="toastContainer"></div>
+
   <div class="modal-overlay" id="deleteModal">
     <div class="modal">
       <div class="confirm-dialog">
         <div class="confirm-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg></div>
-        <h4>حذف المستودع</h4>
-        <p>هل انت متأكد من حذف المستودع <span class="confirm-name" id="deleteRepoName"></span>؟<br>هذا الاجراء لا يمكن التراجع عنه وسيتم حذف جميع الملفات والتاريخ.</p>
+        <h4>حذف المستودع نهائياً</h4>
+        <div class="repo-info-preview" id="deleteRepoPreview">
+          <div class="rip-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg></div>
+          <div class="rip-details">
+            <div class="rip-name" id="deleteRepoName"></div>
+            <div class="rip-meta" id="deleteRepoMeta"></div>
+          </div>
+        </div>
+        <div class="delete-warning-box">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          <span>هذا الإجراء <strong>لا يمكن التراجع عنه</strong>. سيتم حذف جميع الملفات، الفروع، Issues، Pull Requests والتاريخ بالكامل.</span>
+        </div>
+        <div class="confirm-input-wrap">
+          <label>للتأكيد، اكتب اسم المستودع: <strong id="deleteConfirmLabel"></strong></label>
+          <input type="text" id="deleteConfirmInput" placeholder="" dir="ltr" autocomplete="off" spellcheck="false">
+        </div>
         <div class="error-msg" id="deleteError" style="text-align:right"></div>
         <div class="modal-actions">
-          <button class="btn-sm btn-cancel" onclick="closeModal('deleteModal')">الغاء</button>
-          <button class="btn-sm btn-danger" id="deleteBtn" onclick="submitDelete()">
+          <button class="btn-sm btn-cancel" onclick="closeDeleteModal()">الغاء</button>
+          <button class="btn-sm btn-danger-delete" id="deleteBtn" onclick="submitDelete()" disabled>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
-            <span id="deleteBtnText">حذف نهائي</span>
+            <span id="deleteBtnText">حذف هذا المستودع</span>
             <div class="spinner spinner-inline" id="deleteSpinner"></div>
           </button>
         </div>
@@ -471,13 +532,87 @@
       .catch(function(){document.getElementById('visibilityError').textContent='حدث خطأ';document.getElementById('visibilityError').style.display='block';b.disabled=false;document.getElementById('visibilityBtnText').style.display='inline';document.getElementById('visibilitySpinner').style.display='none';});
     }
 
-    function openDeleteModal(o,n,f){activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;document.getElementById('deleteRepoName').textContent=f;openModal('deleteModal');}
-    function submitDelete(){
-      var b=document.getElementById('deleteBtn');b.disabled=true;document.getElementById('deleteBtnText').style.display='none';document.getElementById('deleteSpinner').style.display='block';
+    function showToast(msg,type){
+      var tc=document.getElementById('toastContainer');
+      var t=document.createElement('div');
+      t.className='toast '+type;
+      var icon=type==='success'?'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>':'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303 3.376c-.866 1.5-.217 3.374-1.948 3.374H4.653c-1.73 0-2.813-1.874-1.948-3.374L10.051 3.378c.866-1.5 3.032-1.5 3.898 0l8.354 14.748zM12 15.75h.008v.008H12v-.008z"/></svg>';
+      t.innerHTML=icon+'<span>'+escapeAttr(msg)+'</span>';
+      tc.appendChild(t);
+      setTimeout(function(){t.classList.add('removing');setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);},3500);
+    }
+
+    function openDeleteModal(o,n,f){
+      activeRepoOwner=o;activeRepoName=n;activeRepoFullName=f;
+      document.getElementById('deleteRepoName').textContent=f;
+      document.getElementById('deleteConfirmLabel').textContent=f;
+      document.getElementById('deleteConfirmInput').value='';
+      document.getElementById('deleteConfirmInput').placeholder=f;
       document.getElementById('deleteError').style.display='none';
-      apiFetch('/api/github/repos/'+activeRepoOwner+'/'+activeRepoName,{method:'DELETE'})
-      .then(function(d){if(d.success){closeModal('deleteModal');refreshRepos();}else{document.getElementById('deleteError').textContent=d.message;document.getElementById('deleteError').style.display='block';}b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';})
-      .catch(function(){document.getElementById('deleteError').textContent='حدث خطأ';document.getElementById('deleteError').style.display='block';b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';});
+      var repo=allRepos.find(function(r){return r.full_name===f;});
+      if(repo){
+        var metaParts=[];
+        metaParts.push(repo.private?'\u062e\u0627\u0635':'\u0639\u0627\u0645');
+        if(repo.language)metaParts.push(repo.language);
+        metaParts.push('\u2605 '+repo.stargazers_count);
+        document.getElementById('deleteRepoMeta').textContent=metaParts.join(' \u00b7 ');
+      }else{
+        document.getElementById('deleteRepoMeta').textContent='';
+      }
+      var btn=document.getElementById('deleteBtn');
+      btn.disabled=true;btn.classList.remove('enabled');
+      openModal('deleteModal');
+      setTimeout(function(){document.getElementById('deleteConfirmInput').focus();},100);
+    }
+    function closeDeleteModal(){
+      closeModal('deleteModal');
+      document.getElementById('deleteConfirmInput').value='';
+      var btn=document.getElementById('deleteBtn');
+      btn.disabled=true;btn.classList.remove('enabled');
+    }
+    document.getElementById('deleteConfirmInput').addEventListener('input',function(){
+      var btn=document.getElementById('deleteBtn');
+      var match=this.value===activeRepoFullName;
+      btn.disabled=!match;
+      btn.classList.toggle('enabled',match);
+      this.classList.toggle('match',match);
+    });
+    document.getElementById('deleteConfirmInput').addEventListener('keydown',function(e){
+      if(e.key==='Enter'&&this.value===activeRepoFullName)submitDelete();
+    });
+    function submitDelete(){
+      if(document.getElementById('deleteConfirmInput').value!==activeRepoFullName)return;
+      var b=document.getElementById('deleteBtn');b.disabled=true;b.classList.remove('enabled');
+      document.getElementById('deleteBtnText').style.display='none';document.getElementById('deleteSpinner').style.display='block';
+      document.getElementById('deleteError').style.display='none';
+      var deletedName=activeRepoFullName;
+      apiFetch('/api/github/repos/'+encodeURIComponent(activeRepoOwner)+'/'+encodeURIComponent(activeRepoName),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmName:activeRepoFullName})})
+      .then(function(d){
+        if(d.success){
+          closeDeleteModal();
+          showToast('\u062a\u0645 \u062d\u0630\u0641 '+deletedName+' \u0628\u0646\u062c\u0627\u062d','success');
+          allRepos=allRepos.filter(function(r){return r.full_name!==deletedName;});
+          document.getElementById('repoCount').textContent=allRepos.length;
+          document.getElementById('privateCount').textContent=allRepos.filter(function(r){return r.private}).length;
+          document.getElementById('publicCount').textContent=allRepos.filter(function(r){return !r.private}).length;
+          renderRepos(allRepos);
+        }else{
+          document.getElementById('deleteError').textContent=d.message;
+          document.getElementById('deleteError').style.display='block';
+          showToast(d.message,'error');
+        }
+        b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';
+        document.getElementById('deleteConfirmInput').value='';
+        b.classList.remove('enabled');
+      })
+      .catch(function(){
+        document.getElementById('deleteError').textContent='\u062d\u062f\u062b \u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644';
+        document.getElementById('deleteError').style.display='block';
+        showToast('\u062d\u062f\u062b \u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644','error');
+        b.disabled=false;document.getElementById('deleteBtnText').style.display='inline';document.getElementById('deleteSpinner').style.display='none';
+        document.getElementById('deleteConfirmInput').value='';
+        b.classList.remove('enabled');
+      });
     }
 
     function refreshRepos(){apiFetch('/api/github/repos').then(function(d){if(d.success){allRepos=d.repos;document.getElementById('repoCount').textContent=allRepos.length;document.getElementById('privateCount').textContent=allRepos.filter(function(r){return r.private}).length;document.getElementById('publicCount').textContent=allRepos.filter(function(r){return !r.private}).length;renderRepos(allRepos);}}).catch(function(){});}
