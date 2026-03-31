@@ -6,7 +6,13 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["github", "zip", "upload", "deploy", "oauth"],
+  "keywords": [
+    "github",
+    "zip",
+    "upload",
+    "deploy",
+    "oauth"
+  ],
   "author": "git-zip",
   "license": "ISC",
   "description": "Upload ZIP files and push them to GitHub repositories via OAuth",
@@ -14,7 +20,9 @@
     "adm-zip": "^0.5.16",
     "axios": "^1.13.6",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
     "express-session": "^1.19.0",
+    "helmet": "^8.1.0",
     "multer": "^2.1.1"
   }
 }
