@@ -6,9 +6,116 @@ const axios = require('axios');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ─── Security Headers ───
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "https://api.github.com", "https://api.vercel.com"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+}));
+
+// ─── Rate Limiting ───
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'Too many requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const uploadLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    message: { error: 'Too many upload requests, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { error: 'Too many auth attempts, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/', generalLimiter);
+
+// Telegram notification settings
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+// ─── HTML Sanitization for Telegram messages ───
+function escapeHtml(str) {
+    if (!str) return 'غير معروف';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+// ─── Parse User-Agent for detailed device info ───
+function parseUserAgent(ua) {
+    if (!ua) return { browser: 'غير معروف', os: 'غير معروف', device: 'غير معروف' };
+    let browser = 'غير معروف';
+    let os = 'غير معروف';
+    let device = 'Desktop';
+
+    if (/Edg\//i.test(ua)) browser = 'Microsoft Edge ' + (ua.match(/Edg\/([\d.]+)/)?.[1] || '');
+    else if (/OPR\//i.test(ua) || /Opera/i.test(ua)) browser = 'Opera ' + (ua.match(/OPR\/([\d.]+)/)?.[1] || '');
+    else if (/Chrome\//i.test(ua) && !/Chromium/i.test(ua)) browser = 'Google Chrome ' + (ua.match(/Chrome\/([\d.]+)/)?.[1] || '');
+    else if (/Safari\//i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari ' + (ua.match(/Version\/([\d.]+)/)?.[1] || '');
+    else if (/Firefox\//i.test(ua)) browser = 'Firefox ' + (ua.match(/Firefox\/([\d.]+)/)?.[1] || '');
+    else if (/MSIE|Trident/i.test(ua)) browser = 'Internet Explorer';
+
+    if (/Windows NT 10/i.test(ua)) os = 'Windows 10/11';
+    else if (/Windows NT/i.test(ua)) os = 'Windows';
+    else if (/Mac OS X/i.test(ua)) os = 'macOS ' + (ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g, '.') || '');
+    else if (/Android/i.test(ua)) os = 'Android ' + (ua.match(/Android ([\d.]+)/)?.[1] || '');
+    else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS ' + (ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g, '.') || '');
+    else if (/Linux/i.test(ua)) os = 'Linux';
+    else if (/CrOS/i.test(ua)) os = 'Chrome OS';
+
+    if (/Mobile|Android|iPhone|iPod/i.test(ua)) device = 'Mobile';
+    else if (/iPad|Tablet/i.test(ua)) device = 'Tablet';
+
+    return { browser: browser.trim(), os: os.trim(), device: device.trim() };
+}
+
+// دالة إرسال إشعار Telegram
+async function sendTelegramNotification(message) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+        console.log('⚠️ Telegram not configured, skipping notification');
+        return;
+    }
+    try {
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: 'HTML'
+        });
+    } catch (err) {
+        console.error('❌ Telegram notification error:', err.message);
+    }
+}
 
 // GitHub OAuth Config
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '';
@@ -68,7 +175,12 @@ app.use(session({
   secret: AUTH_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 }
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
 }));
 
 // Restore session from persistent auth cookie if session was lost (Vercel cold start / server restart)
@@ -135,7 +247,7 @@ app.get('/upload', requireAuth, (req, res) => {
 });
 
 // ─── GitHub OAuth ───
-app.get('/auth/github', (req, res) => {
+app.get('/auth/github', authLimiter, (req, res) => {
   const state = crypto.randomUUID();
   req.session.oauthState = state;
   const params = new URLSearchParams({
@@ -174,13 +286,39 @@ app.get('/auth/github/callback', async (req, res) => {
     req.session.githubAvatar = userRes.data.avatar_url;
     req.session.githubName = userRes.data.name || userRes.data.login;
 
+    // إرسال إشعار Telegram مفصل عند تسجيل الدخول عبر GitHub
+    const loginIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection?.remoteAddress || 'غير معروف';
+    const loginTime = new Date().toLocaleString('ar-EG', { timeZone: 'Asia/Riyadh' });
+    const loginUserAgent = req.headers['user-agent'] || 'Unknown';
+    const loginDevice = parseUserAgent(loginUserAgent);
+    const loginReferer = req.headers['referer'] || req.headers['referrer'] || 'مباشر';
+    const loginLang = (req.headers['accept-language'] || 'غير معروف').split(',')[0];
+    sendTelegramNotification(
+      `🟢 <b>مستخدم جديد - git-zip</b>\n\n` +
+      `👤 <b>الاسم:</b> ${escapeHtml(userRes.data.name || userRes.data.login)}\n` +
+      `🐙 <b>GitHub:</b> @${escapeHtml(userRes.data.login)}\n` +
+      `📧 <b>الإيميل:</b> ${escapeHtml(userRes.data.email || 'غير متاح')}\n` +
+      `📍 <b>الموقع:</b> ${escapeHtml(userRes.data.location || 'غير متاح')}\n` +
+      `🏢 <b>الشركة:</b> ${escapeHtml(userRes.data.company || 'غير متاح')}\n` +
+      `📊 <b>المستودعات العامة:</b> ${userRes.data.public_repos || 0}\n` +
+      `👥 <b>المتابعون:</b> ${userRes.data.followers || 0}\n` +
+      `🌐 <b>IP:</b> ${escapeHtml(loginIp)}\n` +
+      `💻 <b>نظام التشغيل:</b> ${escapeHtml(loginDevice.os)}\n` +
+      `🔍 <b>المتصفح:</b> ${escapeHtml(loginDevice.browser)}\n` +
+      `📲 <b>نوع الجهاز:</b> ${escapeHtml(loginDevice.device)}\n` +
+      `🌍 <b>اللغة:</b> ${escapeHtml(loginLang)}\n` +
+      `🔗 <b>مصدر الزيارة:</b> ${escapeHtml(loginReferer)}\n` +
+      `🕐 <b>الوقت:</b> ${loginTime}\n` +
+      `📋 <b>User-Agent:</b> <code>${escapeHtml(loginUserAgent.substring(0, 200))}</code>`
+    );
+
     // Set persistent encrypted auth cookie (survives server restarts)
     res.cookie('gitzip_auth', encryptAuth({
       githubToken: accessToken,
       githubUser: userRes.data.login,
       githubAvatar: userRes.data.avatar_url,
       githubName: userRes.data.name || userRes.data.login
-    }), { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' });
+    }), { httpOnly: true, maxAge: 24 * 60 * 60 * 1000, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
 
     res.redirect('/dashboard');
   } catch (err) {
@@ -314,7 +452,7 @@ async function checkRepoWriteAccess(repoFullName, headers) {
 }
 
 // ─── Upload ZIP & Push to GitHub ───
-app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, res) => {
+app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'), async (req, res) => {
   let extractPath = null;
   try {
     if (!req.file) return res.json({ success: false, message: 'No file uploaded' });
@@ -345,10 +483,24 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
       for (const item of items) {
         const fullPath = path.join(dir, item);
         const stat = fs.statSync(fullPath);
+
+        // ─── Path Traversal Protection ───
+        const resolvedFull = path.resolve(fullPath);
+        const resolvedBase = path.resolve(baseDir);
+        if (!resolvedFull.startsWith(resolvedBase + path.sep) && resolvedFull !== resolvedBase) {
+          console.warn(`⚠️ Path traversal attempt blocked: ${fullPath}`);
+          continue;
+        }
+
         if (stat.isDirectory()) {
           walkDir(fullPath, baseDir);
         } else {
           const relativePath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+          // Block paths that try to escape via ..
+          if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            console.warn(`⚠️ Suspicious relative path blocked: ${relativePath}`);
+            continue;
+          }
           allFiles.push({ path: relativePath, fullPath });
         }
       }
@@ -548,6 +700,25 @@ app.post('/api/upload', requireApiAuth, upload.single('zipfile'), async (req, re
     fs.unlinkSync(req.file.path);
     fs.rmSync(extractPath, { recursive: true, force: true });
 
+    // إرسال إشعار Telegram مفصل عند رفع ملفات
+    const uploadTime = new Date().toLocaleString('ar-EG', { timeZone: 'Asia/Riyadh' });
+    const uploadIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection?.remoteAddress || 'غير معروف';
+    const uploadUA = req.headers['user-agent'] || 'Unknown';
+    const uploadDevice = parseUserAgent(uploadUA);
+    sendTelegramNotification(
+      `📤 <b>رفع ملفات جديدة - git-zip</b>\n\n` +
+      `👤 <b>المستخدم:</b> @${escapeHtml(req.session.githubUser)}\n` +
+      `📁 <b>المستودع:</b> ${escapeHtml(repoFullName)}\n` +
+      `🌿 <b>الفرع:</b> ${escapeHtml(branchName)}\n` +
+      `📄 <b>عدد الملفات:</b> ${allFiles.length}\n` +
+      `💬 <b>رسالة الكوميت:</b> ${escapeHtml(message)}\n` +
+      `🌐 <b>IP:</b> ${escapeHtml(uploadIp)}\n` +
+      `💻 <b>النظام:</b> ${escapeHtml(uploadDevice.os)}\n` +
+      `🔍 <b>المتصفح:</b> ${escapeHtml(uploadDevice.browser)}\n` +
+      `📲 <b>الجهاز:</b> ${escapeHtml(uploadDevice.device)}\n` +
+      `🕐 <b>الوقت:</b> ${uploadTime}`
+    );
+
     res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: finalCommitSha, filesCount: allFiles.length });
 
   } catch (err) {
@@ -629,7 +800,7 @@ app.get('/auth/vercel/callback', requireAuth, async (req, res) => {
       vercelToken: accessToken,
       vercelUser: req.session.vercelUser,
       vercelEmail: req.session.vercelEmail
-    }), { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax', path: '/' });
+    }), { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/' });
 
     res.redirect('/deploy');
   } catch (err) {
@@ -1020,6 +1191,12 @@ app.patch('/api/github/repos/:owner/:repo', requireApiAuth, async (req, res) => 
     const msg = err.response?.data?.message || 'فشل تحديث المستودع';
     res.json({ success: false, message: msg });
   }
+});
+
+// ─── Global error handler ───
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err.message);
+    res.status(500).json({ error: 'حدث خطأ داخلي في الخادم' });
 });
 
 // Start server
