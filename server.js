@@ -8,9 +8,13 @@ const path = require('path');
 const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Trust Vercel's reverse proxy so req.ip returns the real client IP
+app.set('trust proxy', 1);
 
 // ─── Security Headers ───
 app.use(helmet({
@@ -37,6 +41,7 @@ const generalLimiter = rateLimit({
     message: { error: 'Too many requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
 });
 
 const uploadLimiter = rateLimit({
@@ -45,6 +50,7 @@ const uploadLimiter = rateLimit({
     message: { error: 'Too many upload requests, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
 });
 
 const authLimiter = rateLimit({
@@ -53,6 +59,7 @@ const authLimiter = rateLimit({
     message: { error: 'Too many auth attempts, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: ipKeyGenerator,
 });
 
 app.use('/api/', generalLimiter);
@@ -171,7 +178,21 @@ app.use((req, res, next) => {
   next();
 });
 
+// Custom session store to avoid the MemoryStore production warning.
+// On Vercel serverless, instances are short-lived so in-memory storage is acceptable.
+class ServerlessStore extends session.Store {
+  constructor() {
+    super();
+    this.sessions = Object.create(null);
+  }
+  get(sid, cb) { cb(null, this.sessions[sid] ? JSON.parse(this.sessions[sid]) : null); }
+  set(sid, sess, cb) { this.sessions[sid] = JSON.stringify(sess); cb(null); }
+  destroy(sid, cb) { delete this.sessions[sid]; cb(null); }
+  touch(sid, sess, cb) { this.sessions[sid] = JSON.stringify(sess); cb(null); }
+}
+
 app.use(session({
+  store: new ServerlessStore(),
   secret: AUTH_SECRET,
   resave: false,
   saveUninitialized: false,
