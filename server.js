@@ -271,6 +271,11 @@ app.get('/upload', requireAuth, (req, res) => {
 app.get('/auth/github', authLimiter, (req, res) => {
   const state = crypto.randomUUID();
   req.session.oauthState = state;
+  // Also store state in a cookie so it survives Vercel cold starts
+  res.cookie('gitzip_oauth_state', state, {
+    httpOnly: true, maxAge: 10 * 60 * 1000, sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production', path: '/'
+  });
   const params = new URLSearchParams({
     client_id: GITHUB_CLIENT_ID,
     redirect_uri: `${BASE_URL}/auth/github/callback`,
@@ -283,10 +288,13 @@ app.get('/auth/github', authLimiter, (req, res) => {
 app.get('/auth/github/callback', async (req, res) => {
   try {
     const { code, state } = req.query;
-    if (!code || state !== req.session.oauthState) {
+    // Check state from session first, then fall back to cookie (Vercel cold start)
+    const savedState = req.session.oauthState || req.cookies.gitzip_oauth_state;
+    if (!code || state !== savedState) {
       return res.redirect('/?error=auth_failed');
     }
     delete req.session.oauthState;
+    res.clearCookie('gitzip_oauth_state');
 
     const tokenRes = await axios.post('https://github.com/login/oauth/access_token', {
       client_id: GITHUB_CLIENT_ID,
@@ -367,10 +375,23 @@ app.get('/api/me', requireApiAuth, (req, res) => {
 // ─── GitHub Repos ───
 app.get('/api/github/repos', requireApiAuth, async (req, res) => {
   try {
-    const response = await axios.get('https://api.github.com/user/repos?per_page=100&sort=updated', {
-      headers: { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' }
-    });
-    const repos = response.data
+    const headers = { Authorization: `Bearer ${req.session.githubToken}`, 'User-Agent': 'git-zip-app' };
+    let allRepos = [];
+    let page = 1;
+    const perPage = 100;
+
+    // Paginate through all repos
+    while (true) {
+      const response = await axios.get(`https://api.github.com/user/repos?per_page=${perPage}&sort=updated&page=${page}`, { headers });
+      const pageRepos = response.data;
+      if (!pageRepos || pageRepos.length === 0) break;
+      allRepos = allRepos.concat(pageRepos);
+      if (pageRepos.length < perPage) break;
+      page++;
+      if (page > 10) break; // Safety limit: max 1000 repos
+    }
+
+    const repos = allRepos
       .filter(r => r.permissions && r.permissions.push)
       .map(r => ({
         name: r.name,

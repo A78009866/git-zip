@@ -503,6 +503,11 @@
     let selectedFile = null;
     let repos = [];
 
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     // Session persistence
     const cachedUser=JSON.parse(localStorage.getItem('gitzip_user')||'null');
     if(cachedUser) applyUserData(cachedUser);
@@ -640,12 +645,12 @@
     function renderRepoCards(list) {
       const container = document.getElementById('reposScroll');
       container.innerHTML = list.map(r => `
-        <div class="repo-select-card ${selectedRepo === r.full_name ? 'selected' : ''}" onclick="selectRepo('${r.full_name}','${r.default_branch}')">
+        <div class="repo-select-card ${selectedRepo === r.full_name ? 'selected' : ''}" onclick="selectRepo('${escapeHtml(r.full_name)}','${escapeHtml(r.default_branch)}')">
           <div class="rsc-check">${CHECK_ICON}</div>
           <div class="rsc-icon">${GH_ICON}</div>
           <div class="rsc-info">
-            <h4>${r.full_name}</h4>
-            <p>${r.description || 'بدون وصف'}</p>
+            <h4>${escapeHtml(r.full_name)}</h4>
+            <p>${escapeHtml(r.description) || 'بدون وصف'}</p>
           </div>
           <span class="rsc-badge" style="background:${r.private ? 'rgba(124,58,237,0.08);color:#a78bfa;border:1px solid rgba(124,58,237,0.2)' : 'rgba(5,150,105,0.08);color:#34d399;border:1px solid rgba(5,150,105,0.2)'}">${r.private ? 'خاص' : 'عام'}</span>
         </div>

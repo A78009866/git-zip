@@ -552,6 +552,11 @@
     let deleteTargetId = '';
     let deleteTargetName = '';
 
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     // Session
     const cachedUser = JSON.parse(localStorage.getItem('gitzip_user') || 'null');
     if (cachedUser) applyUserData(cachedUser);
@@ -658,8 +663,8 @@
       container.innerHTML = projects.map(p => {
         const fw = getFrameworkInfo(p.framework);
         const st = p.latestDeployment ? getStatusInfo(p.latestDeployment.state) : null;
-        const url = `https://${p.name}.vercel.app`;
-        const repoInfo = p.link ? `${p.link.org}/${p.link.repo}` : '';
+        const url = `https://${escapeHtml(p.name)}.vercel.app`;
+        const repoInfo = p.link ? `${escapeHtml(p.link.org)}/${escapeHtml(p.link.repo)}` : '';
 
         return `
         <div class="project-card">
@@ -668,7 +673,7 @@
               <div class="pc-icon" style="background:${fw.color}">
                 <span style="color:${fw.textColor};font-weight:700;font-size:0.85rem">${fw.icon}</span>
               </div>
-              <h4>${p.name}</h4>
+              <h4>${escapeHtml(p.name)}</h4>
             </div>
             <span class="pc-framework">${fw.label}</span>
           </div>
@@ -713,11 +718,11 @@
 
     function renderDeployRepos(list) {
       document.getElementById('deployReposList').innerHTML = list.map(r => `
-        <div class="repo-select-card ${selectedDeployRepo === r.full_name ? 'selected' : ''}" onclick="selectDeployRepo('${r.full_name}','${r.name}')">
+        <div class="repo-select-card ${selectedDeployRepo === r.full_name ? 'selected' : ''}" onclick="selectDeployRepo('${escapeHtml(r.full_name)}','${escapeHtml(r.name)}')">
           <div class="rsc-icon">${GH_ICON}</div>
           <div class="rsc-info">
-            <h4>${r.full_name}</h4>
-            <p>${r.description || 'بدون وصف'}</p>
+            <h4>${escapeHtml(r.full_name)}</h4>
+            <p>${escapeHtml(r.description) || 'بدون وصف'}</p>
           </div>
         </div>
       `).join('');
