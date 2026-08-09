@@ -230,6 +230,10 @@
       <div class="file-layout">
         <div class="file-sidebar" id="fileSidebar">
           <div class="tree-tools">
+            <button class="btn btn-secondary" id="pullBtn" title="نسخ ملفات المستودع من GitHub الى مساحة العمل">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              جلب الملفات
+            </button>
             <button class="btn btn-secondary" onclick="document.getElementById('zipInput').click()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
               رفع ZIP
@@ -253,7 +257,7 @@
           </button>
           <div id="emptyEditor" class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <p>اختر ملفاً من الشجرة أو ارفع ZIP للبدء</p>
+            <p>لا توجد ملفات في مساحة العمل. اضغط "جلب الملفات" لنسخها من GitHub، أو ارفع ZIP.</p>
           </div>
           <div id="editorWrap" class="hidden">
             <div class="editor-bar">
@@ -407,7 +411,7 @@
       }).join('');
     }
 
-    window.selectRepo = function(fullName) {
+    window.selectRepo = async function(fullName) {
       state.selectedRepo = fullName;
       const repo = state.repos.find(r => r.full_name === fullName);
       if (repo) {
@@ -418,8 +422,9 @@
       localStorage.setItem('gz_workspace_branch', state.branch);
       renderRepoList();
       updateSelectedCard();
-      toast('تم اختيار المستودع، انتقل للخطوة التالية', 'success');
+      toast('تم اختيار المستودع، جارٍ جلب الملفات...', 'info');
       showStep(2);
+      await pullRepoFiles();
     };
 
     function updateSelectedCard() {
@@ -672,6 +677,27 @@
 
     document.getElementById('downloadBtn').onclick = () => window.location.href = '/api/workspace/download';
     document.getElementById('nextToCommitBtn').onclick = () => showStep(3);
+
+    async function pullRepoFiles() {
+      if (!state.selectedRepo) { toast('اختر مستودعاً اولاً', 'error'); return; }
+      const btn = document.getElementById('pullBtn');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> جارٍ الجلب...'; }
+      const res = await api('/api/workspace/pull', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ repoFullName: state.selectedRepo, branch: state.branch })
+      });
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> جلب الملفات'; }
+      if (res && res.success) {
+        toast(res.message, 'success');
+        loadFiles();
+        if (res.truncated) toast('تحذير: المستودع كبير وتم جلب جزء من الملفات فقط', 'info');
+      } else {
+        toast(res?.message || 'فشل جلب الملفات', 'error');
+      }
+    }
+
+    document.getElementById('pullBtn').onclick = pullRepoFiles;
 
     async function updateCommitSummary() {
       document.getElementById('csRepo').textContent = state.selectedRepo || '—';

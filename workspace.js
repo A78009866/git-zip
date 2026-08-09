@@ -301,6 +301,62 @@ module.exports = function (app, workspaceDir) {
     }
   });
 
+  // ─── Pull files from GitHub repo into workspace ───
+  app.post('/api/workspace/pull', requireApiAuth, async (req, res) => {
+    let pulled = 0;
+    try {
+      const { repoFullName, branch } = req.body;
+      if (!repoFullName) return res.json({ success: false, message: 'اسم المستودع مطلوب' });
+
+      const token = req.session.githubToken;
+      const access = await checkRepoWriteAccess(repoFullName, token);
+      if (!access.ok) return res.json({ success: false, message: access.message });
+
+      const repoData = access.data;
+      const canonicalName = repoData.full_name || repoFullName;
+      const defaultBranch = repoData.default_branch || 'main';
+      const branchName = branch || defaultBranch;
+
+      const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
+
+      const refRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/ref/heads/${branchName}`, { headers });
+      const commitSha = refRes.data.object.sha;
+      const commitRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/commits/${commitSha}`, { headers });
+      const treeSha = commitRes.data.tree.sha;
+
+      const treeRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/trees/${treeSha}?recursive=1`, { headers });
+      const treeItems = treeRes.data.tree || [];
+      const truncated = treeRes.data.truncated;
+
+      const wsPath = getWorkspacePath(req, workspaceDir);
+      if (!fs.existsSync(wsPath)) fs.mkdirSync(wsPath, { recursive: true });
+
+      const MAX_BLOB_SIZE = 1 * 1024 * 1024; // 1 MB
+      for (const item of treeItems) {
+        if (item.type !== 'blob') continue;
+        if (item.path.startsWith('.git/')) continue;
+        if (item.size > MAX_BLOB_SIZE) { console.warn('Skipping large file:', item.path); continue; }
+
+        try {
+          const blobRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/blobs/${item.sha}`, { headers });
+          const content = Buffer.from(blobRes.data.content, 'base64');
+          const target = safeResolve(wsPath, item.path);
+          if (!target) { console.warn('Invalid path skipped:', item.path); continue; }
+          fs.mkdirSync(path.dirname(target), { recursive: true });
+          fs.writeFileSync(target, content);
+          pulled++;
+        } catch (e) {
+          console.error(`Pull failed for ${item.path}:`, e.response?.data?.message || e.message);
+        }
+      }
+
+      res.json({ success: true, message: `تم جلب ${pulled} ملفاً من ${canonicalName}`, filesCount: pulled, truncated });
+    } catch (err) {
+      console.error('Workspace pull error:', err.response?.data || err.message);
+      res.json({ success: false, message: err.response?.data?.message || 'فشل جلب ملفات المستودع' });
+    }
+  });
+
   // ─── Push workspace to GitHub ───
   app.post('/api/workspace/commit', requireApiAuth, async (req, res) => {
     let pushed = 0;
