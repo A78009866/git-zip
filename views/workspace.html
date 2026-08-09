@@ -93,8 +93,11 @@
     .editor-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
     .editor-title{color:#fafafa;font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:8px;direction:ltr;unicode-bidi:embed}
     .editor-title span{color:var(--muted);font-size:0.8rem;font-weight:500}
-    .CodeMirror{height:460px;border-radius:10px;font-size:0.9rem;font-family:'Fira Code',monospace,Consolas;background:#050505!important}
-    .CodeMirror-gutters{background:#0d0d0d!important;border-right:1px solid var(--border)!important}
+    .CodeMirror{height:460px;border-radius:10px;font-size:0.9rem;font-family:'Fira Code',monospace,Consolas;background:#050505!important;direction:ltr!important;text-align:left!important}
+    .CodeMirror-scroll{direction:ltr!important}
+    .CodeMirror-gutters{background:#0d0d0d!important;border-right:1px solid var(--border)!important;direction:ltr!important}
+    .CodeMirror-linenumber{direction:ltr!important}
+    .CodeMirror-lines{padding:4px 0;direction:ltr!important}
     @media(max-width:640px){.CodeMirror{height:320px}}
     .empty-state{text-align:center;padding:60px 20px;color:var(--dim)}
     .empty-state svg{width:56px;height:56px;stroke:#3f3f46;margin-bottom:14px}
@@ -231,7 +234,7 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
               رفع ZIP
             </button>
-            <input type="file" id="zipInput" class="file-input" accept=".zip">
+            <input type="file" id="zipInput" name="zipfile" class="file-input" accept=".zip,application/zip,application/x-zip-compressed">
             <button class="btn btn-secondary" id="downloadBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               تحميل ZIP
@@ -415,7 +418,8 @@
       localStorage.setItem('gz_workspace_branch', state.branch);
       renderRepoList();
       updateSelectedCard();
-      toast('تم اختيار المستودع', 'success');
+      toast('تم اختيار المستودع، انتقل للخطوة التالية', 'success');
+      showStep(2);
     };
 
     function updateSelectedCard() {
@@ -485,7 +489,7 @@
         selectRepo(res.repo.full_name);
         document.getElementById('newRepoName').value = '';
         document.getElementById('newRepoDesc').value = '';
-        toast('تم انشاء المستودع', 'success');
+        toast('تم انشاء المستودع والانتقال لمساحة العمل', 'success');
       } else toast(res?.message || 'فشل الانشاء', 'error');
     };
 
@@ -551,6 +555,10 @@
       const mode = modeForFile(name);
       await loadMode(mode);
       editor.setOption('mode', mode);
+      editor.refresh();
+
+      const sidebar = document.getElementById('fileSidebar');
+      if (window.innerWidth <= 900 && sidebar.classList.contains('open')) sidebar.classList.remove('open');
     }
 
     window.openFile = openFile;
@@ -618,13 +626,18 @@
     document.getElementById('deleteFileBtn').onclick = async function() {
       if (!state.currentFile) return;
       if (!await confirmModal('حذف الملف', 'هل تريد حذف ' + state.currentFile + '؟')) return;
-      const res = await api('/api/workspace/file?path=' + encodeURIComponent(state.currentFile), { method: 'DELETE' });
+      const deletedFile = state.currentFile;
+      state.currentFile = '';
+      const res = await api('/api/workspace/file?path=' + encodeURIComponent(deletedFile), { method: 'DELETE' });
       if (res && res.success) {
         toast('تم الحذف', 'success');
-        state.currentFile = ''; document.getElementById('editorWrap').classList.add('hidden');
+        document.getElementById('editorWrap').classList.add('hidden');
         document.getElementById('emptyEditor').classList.remove('hidden');
         loadFiles();
-      } else toast(res?.message || 'فشل الحذف', 'error');
+      } else {
+        state.currentFile = deletedFile;
+        toast(res?.message || 'فشل الحذف', 'error');
+      }
     };
 
     document.getElementById('newFileBtn').onclick = async function() {
@@ -644,12 +657,16 @@
       if (!file) return;
       const form = new FormData(); form.append('zipfile', file);
       toast('جارٍ رفع الملف...', 'info');
+      const btn = e.target;
+      btn.disabled = true;
       const res = await fetch('/api/workspace/upload', { method: 'POST', body: form, headers: {'X-Requested-With':'XMLHttpRequest'} });
+      btn.disabled = false;
       const data = await res.json().catch(() => ({}));
       if (data && data.success) {
-        toast(`تم رفع ${data.files.length} ملف`, 'success');
+        toast(`تم رفع ${data.files.length} ملف الى مساحة العمل`, 'success');
         loadFiles();
-      } else toast(data?.message || 'فشل الرفع', 'error');
+        if (state.selectedRepo) showStep(3);
+      } else toast(data?.message || 'فشل رفع ZIP', 'error');
       e.target.value = '';
     };
 
@@ -659,9 +676,9 @@
     async function updateCommitSummary() {
       document.getElementById('csRepo').textContent = state.selectedRepo || '—';
       document.getElementById('csBranch').textContent = state.branch || 'main';
-      const data = await api('/api/workspace/files');
+      const data = await api('/api/workspace/files?recursive=1');
       let count = 0;
-      if (data && data.success) count = data.entries.length;
+      if (data && data.success) count = data.files.length;
       document.getElementById('csFiles').textContent = count;
     }
 

@@ -58,25 +58,83 @@ async function checkRepoWriteAccess(repoFullName, token) {
   }
 }
 
-async function createBranchIfNeeded(repoFullName, branchName, defaultBranch, token) {
+async function ensureBranchHasCommit(repoFullName, branchName, defaultBranch, token) {
   const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
-  if (branchName === defaultBranch) return true;
+  // If branch already exists, we're fine
   try {
     await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${branchName}`, { headers });
     return true;
   } catch (err) {
     if (err.response?.status !== 404) return false;
   }
+
+  // Default branch has a commit? Create target branch from it.
+  let defaultCommitSha = null;
   try {
     const def = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers });
-    await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, {
-      ref: `refs/heads/${branchName}`,
-      sha: def.data.object.sha
-    }, { headers });
-    return true;
+    defaultCommitSha = def.data.object.sha;
   } catch (err) {
-    return false;
+    if (err.response?.status !== 404) return false;
   }
+
+  if (defaultCommitSha) {
+    if (branchName === defaultBranch) return true;
+    try {
+      await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, {
+        ref: `refs/heads/${branchName}`,
+        sha: defaultCommitSha
+      }, { headers });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // Empty repository: initialize it with a seed file via Contents API.
+  // This is the only way to create the first commit on GitHub.
+  console.log('Empty repo detected, initializing via Contents API...');
+  const seedNames = ['.gitkeep', `.git-zip-init-${Date.now()}`, '.gitinit'];
+  let seeded = false;
+  let seedFile = null;
+  for (const name of seedNames) {
+    try {
+      await axios.put(`https://api.github.com/repos/${repoFullName}/contents/${name}`, {
+        message: 'Initial commit via git-zip',
+        content: Buffer.from('').toString('base64')
+      }, { headers });
+      seeded = true;
+      seedFile = name;
+      break;
+    } catch (e) {
+      if (e.response?.status === 422) { seeded = true; break; } // already initialized
+      console.warn(`Seed '${name}' failed:`, e.response?.data?.message || e.message);
+    }
+  }
+  if (!seeded) return false;
+
+  // Wait for the ref to appear
+  let latestSha = null;
+  for (let i = 0; i < 6; i++) {
+    try {
+      const ref = await axios.get(`https://api.github.com/repos/${repoFullName}/git/ref/heads/${defaultBranch}`, { headers });
+      latestSha = ref.data.object.sha;
+      break;
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 800));
+    }
+  }
+  if (!latestSha) return false;
+
+  if (branchName !== defaultBranch) {
+    try {
+      await axios.post(`https://api.github.com/repos/${repoFullName}/git/refs`, {
+        ref: `refs/heads/${branchName}`,
+        sha: latestSha
+      }, { headers });
+    } catch (e) { return false; }
+  }
+
+  return { ok: true, seedFile };
 }
 
 function walkWorkspace(dir, baseDir, result = []) {
@@ -150,16 +208,21 @@ module.exports = function (app, workspaceDir) {
   app.get('/api/workspace/files', requireApiAuth, (req, res) => {
     try {
       const wsPath = getWorkspacePath(req, workspaceDir);
-      if (!fs.existsSync(wsPath)) return res.json({ success: true, entries: [] });
+      if (!fs.existsSync(wsPath)) return res.json({ success: true, entries: [], files: [] });
 
       const rel = req.query.path || '';
       const target = safeResolve(wsPath, rel);
       if (!target) return res.status(400).json({ success: false, message: 'مسار غير صالح' });
-      if (!fs.existsSync(target)) return res.json({ success: true, entries: [] });
+      if (!fs.existsSync(target)) return res.json({ success: true, entries: [], files: [] });
 
       const stat = fs.statSync(target);
       if (stat.isFile()) {
-        return res.json({ success: true, entries: [] });
+        return res.json({ success: true, entries: [], files: [] });
+      }
+
+      if (req.query.recursive === '1') {
+        const files = walkWorkspace(wsPath, wsPath).map(f => f.path);
+        return res.json({ success: true, entries: [], files, path: rel });
       }
 
       const entries = fs.readdirSync(target).map(name => {
@@ -260,8 +323,9 @@ module.exports = function (app, workspaceDir) {
       const defaultBranch = repoData.default_branch || 'main';
       const branchName = branch || defaultBranch;
 
-      const created = await createBranchIfNeeded(canonicalName, branchName, defaultBranch, token);
-      if (!created) return res.json({ success: false, message: 'تعذر انشاء/التحقق من الفرع' });
+      const branchResult = await ensureBranchHasCommit(canonicalName, branchName, defaultBranch, token);
+      if (!branchResult) return res.json({ success: false, message: 'تعذر انشاء/التحقق من الفرع' });
+      const seedFile = branchResult.seedFile;
 
       const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
       const message = commitMessage || 'Update from git-zip workspace';
@@ -296,6 +360,17 @@ module.exports = function (app, workspaceDir) {
         );
         lastSha = putRes.data.commit.sha;
         pushed++;
+      }
+
+      // Remove the temporary seed file used to initialize an empty repo, unless the user included it in their workspace
+      if (seedFile && !files.find(f => f.path === seedFile)) {
+        try {
+          const existing = await axios.get(`https://api.github.com/repos/${canonicalName}/contents/${seedFile}?ref=${branchName}`, { headers });
+          await axios.delete(`https://api.github.com/repos/${canonicalName}/contents/${seedFile}`, {
+            headers,
+            data: { message: 'Remove git-zip init file', sha: existing.data.sha, branch: branchName }
+          });
+        } catch (e) { /* ignore */ }
       }
 
       res.json({ success: true, message: `تم رفع ${pushed} ملفاً الى ${canonicalName}`, commitSha: lastSha, filesCount: pushed });
