@@ -424,7 +424,7 @@
       updateSelectedCard();
       toast('تم اختيار المستودع، جارٍ جلب الملفات...', 'info');
       showStep(2);
-      await pullRepoFiles();
+      await pullRepoFiles(false);
     };
 
     function updateSelectedCard() {
@@ -678,26 +678,42 @@
     document.getElementById('downloadBtn').onclick = () => window.location.href = '/api/workspace/download';
     document.getElementById('nextToCommitBtn').onclick = () => showStep(3);
 
-    async function pullRepoFiles() {
+    async function pullRepoFiles(forceOverwrite) {
       if (!state.selectedRepo) { toast('اختر مستودعاً اولاً', 'error'); return; }
       const btn = document.getElementById('pullBtn');
+      const tree = document.getElementById('tree');
       if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> جارٍ الجلب...'; }
+      if (tree) tree.innerHTML = '<div style="text-align:center;padding:20px"><span class="spinner"></span><br>جارٍ جلب الملفات من GitHub...</div>';
+
+      let overwrite = !!forceOverwrite;
+      if (!overwrite) {
+        const filesData = await api('/api/workspace/files?recursive=1');
+        if (filesData && filesData.success && filesData.files && filesData.files.length > 0) {
+          const ok = await confirmModal('استبدال الملفات المحلية؟', `مساحة العمل تحتوي على ${filesData.files.length} ملف. هل تريد استبدالها بالملفات القادمة من GitHub؟`);
+          if (!ok) {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> جلب الملفات'; }
+            loadFiles();
+            return;
+          }
+          overwrite = true;
+        }
+      }
+
       const res = await api('/api/workspace/pull', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ repoFullName: state.selectedRepo, branch: state.branch })
+        body: JSON.stringify({ repoFullName: state.selectedRepo, branch: state.branch, overwrite })
       });
       if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> جلب الملفات'; }
       if (res && res.success) {
         toast(res.message, 'success');
         loadFiles();
-        if (res.truncated) toast('تحذير: المستودع كبير وتم جلب جزء من الملفات فقط', 'info');
       } else {
         toast(res?.message || 'فشل جلب الملفات', 'error');
       }
     }
 
-    document.getElementById('pullBtn').onclick = pullRepoFiles;
+    document.getElementById('pullBtn').onclick = () => pullRepoFiles(false);
 
     async function updateCommitSummary() {
       document.getElementById('csRepo').textContent = state.selectedRepo || '—';

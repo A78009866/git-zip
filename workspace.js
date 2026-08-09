@@ -301,11 +301,12 @@ module.exports = function (app, workspaceDir) {
     }
   });
 
-  // ─── Pull files from GitHub repo into workspace ───
+  // ─── Pull files from GitHub repo into workspace via zipball ───
   app.post('/api/workspace/pull', requireApiAuth, async (req, res) => {
-    let pulled = 0;
+    let tmpZip = null;
+    let extractTmp = null;
     try {
-      const { repoFullName, branch } = req.body;
+      const { repoFullName, branch, overwrite } = req.body;
       if (!repoFullName) return res.json({ success: false, message: 'اسم المستودع مطلوب' });
 
       const token = req.session.githubToken;
@@ -317,43 +318,78 @@ module.exports = function (app, workspaceDir) {
       const defaultBranch = repoData.default_branch || 'main';
       const branchName = branch || defaultBranch;
 
-      const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
+      const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app', Accept: 'application/vnd.github+json' };
 
-      const refRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/ref/heads/${branchName}`, { headers });
-      const commitSha = refRes.data.object.sha;
-      const commitRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/commits/${commitSha}`, { headers });
-      const treeSha = commitRes.data.tree.sha;
+      // GitHub API returns a 302 redirect to a signed codeload URL
+      const apiZipUrl = `https://api.github.com/repos/${canonicalName}/zipball/${encodeURIComponent(branchName)}`;
+      const redirectRes = await axios.get(apiZipUrl, {
+        headers,
+        maxRedirects: 0,
+        validateStatus: s => s === 302 || s === 200
+      });
 
-      const treeRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/trees/${treeSha}?recursive=1`, { headers });
-      const treeItems = treeRes.data.tree || [];
-      const truncated = treeRes.data.truncated;
-
-      const wsPath = getWorkspacePath(req, workspaceDir);
-      if (!fs.existsSync(wsPath)) fs.mkdirSync(wsPath, { recursive: true });
-
-      const MAX_BLOB_SIZE = 1 * 1024 * 1024; // 1 MB
-      for (const item of treeItems) {
-        if (item.type !== 'blob') continue;
-        if (item.path.startsWith('.git/')) continue;
-        if (item.size > MAX_BLOB_SIZE) { console.warn('Skipping large file:', item.path); continue; }
-
-        try {
-          const blobRes = await axios.get(`https://api.github.com/repos/${canonicalName}/git/blobs/${item.sha}`, { headers });
-          const content = Buffer.from(blobRes.data.content, 'base64');
-          const target = safeResolve(wsPath, item.path);
-          if (!target) { console.warn('Invalid path skipped:', item.path); continue; }
-          fs.mkdirSync(path.dirname(target), { recursive: true });
-          fs.writeFileSync(target, content);
-          pulled++;
-        } catch (e) {
-          console.error(`Pull failed for ${item.path}:`, e.response?.data?.message || e.message);
-        }
+      let zipUrl = apiZipUrl;
+      if (redirectRes.status === 302) {
+        zipUrl = redirectRes.headers.location;
+        if (!zipUrl) return res.json({ success: false, message: 'لم يتم توفير رابط تحميل المستودع' });
       }
 
-      res.json({ success: true, message: `تم جلب ${pulled} ملفاً من ${canonicalName}`, filesCount: pulled, truncated });
+      const zipRes = await axios.get(zipUrl, {
+        responseType: 'arraybuffer',
+        headers: { 'User-Agent': 'git-zip-app' }
+      });
+
+      const wsPath = getWorkspacePath(req, workspaceDir);
+      const tmpDir = process.env.VERCEL ? '/tmp' : workspaceDir;
+      tmpZip = path.join(tmpDir, `pull-${crypto.randomUUID()}.zip`);
+      extractTmp = path.join(tmpDir, `pull-${crypto.randomUUID()}`);
+
+      fs.writeFileSync(tmpZip, Buffer.from(zipRes.data));
+      fs.mkdirSync(extractTmp, { recursive: true });
+
+      const zip = new AdmZip(tmpZip);
+      zip.extractAllTo(extractTmp, true);
+
+      // GitHub zipball has a top-level folder like owner-repo-sha/
+      const top = fs.readdirSync(extractTmp);
+      let rootDir = extractTmp;
+      if (top.length === 1) {
+        const single = path.join(extractTmp, top[0]);
+        if (fs.statSync(single).isDirectory()) rootDir = single;
+      }
+
+      if (!fs.existsSync(wsPath)) fs.mkdirSync(wsPath, { recursive: true });
+      if (overwrite) {
+        fs.rmSync(wsPath, { recursive: true, force: true });
+        fs.mkdirSync(wsPath, { recursive: true });
+      }
+
+      // Copy files preserving relative paths
+      const copied = [];
+      function copyDir(src, dst) {
+        for (const item of fs.readdirSync(src)) {
+          if (item === '.git') continue;
+          const srcPath = path.join(src, item);
+          const dstPath = path.join(dst, item);
+          const stat = fs.statSync(srcPath);
+          if (stat.isDirectory()) {
+            if (!fs.existsSync(dstPath)) fs.mkdirSync(dstPath, { recursive: true });
+            copyDir(srcPath, dstPath);
+          } else {
+            fs.copyFileSync(srcPath, dstPath);
+            copied.push(path.relative(wsPath, dstPath).replace(/\\/g, '/'));
+          }
+        }
+      }
+      copyDir(rootDir, wsPath);
+
+      res.json({ success: true, message: `تم جلب ${copied.length} ملفاً من ${canonicalName}`, filesCount: copied.length, files: copied });
     } catch (err) {
       console.error('Workspace pull error:', err.response?.data || err.message);
-      res.json({ success: false, message: err.response?.data?.message || 'فشل جلب ملفات المستودع' });
+      res.json({ success: false, message: err.response?.data?.message || err.message || 'فشل جلب ملفات المستودع' });
+    } finally {
+      try { if (tmpZip) fs.unlinkSync(tmpZip); } catch (e) {}
+      try { if (extractTmp) fs.rmSync(extractTmp, { recursive: true, force: true }); } catch (e) {}
     }
   });
 
