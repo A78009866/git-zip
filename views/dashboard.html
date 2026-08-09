@@ -46,6 +46,9 @@
     .btn-vercel{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(255,255,255,0.06);color:#fafafa;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .3s;border:1px solid rgba(255,255,255,0.15);cursor:pointer}
     .btn-vercel:hover{background:rgba(255,255,255,0.12);transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,0,0,0.3);border-color:rgba(255,255,255,0.25)}
     .btn-vercel svg{width:18px;height:18px}
+    .btn-workspace{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:rgba(59,130,246,0.12);color:#60a5fa;border-radius:10px;text-decoration:none;font-size:0.9rem;font-weight:600;transition:all .3s;border:1px solid rgba(59,130,246,0.3);cursor:pointer;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    .btn-workspace:hover{background:rgba(59,130,246,0.2);transform:translateY(-1px);box-shadow:0 8px 20px rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.45)}
+    .btn-workspace svg{width:18px;height:18px}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:36px}
     @media(max-width:640px){.stats{grid-template-columns:1fr}}
     .stat-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:24px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
@@ -198,6 +201,8 @@
     body.light-mode .btn-upload:hover{background:rgba(22,163,74,0.18);box-shadow:0 8px 20px rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.4)}
     body.light-mode .btn-vercel{background:rgba(0,0,0,0.04);color:#1a1a1a;border-color:rgba(0,0,0,0.12)}
     body.light-mode .btn-vercel:hover{background:rgba(0,0,0,0.08)}
+    body.light-mode .btn-workspace{background:rgba(37,99,235,0.1);color:#2563eb;border-color:rgba(37,99,235,0.3)}
+    body.light-mode .btn-workspace:hover{background:rgba(37,99,235,0.18);box-shadow:0 8px 20px rgba(37,99,235,0.12);border-color:rgba(37,99,235,0.4)}
     body.light-mode .stat-card{background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08);box-shadow:0 1px 3px rgba(0,0,0,0.04)}
     body.light-mode .stat-card .stat-label{color:#71717a}
     body.light-mode .stat-card .stat-label svg{stroke:#71717a}
@@ -358,6 +363,10 @@
           <a href="/upload" class="btn-upload">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
             رفع ملف ZIP
+          </a>
+          <a href="/workspace" class="btn-workspace">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-6 18"/></svg>
+            مساحة العمل
           </a>
         </div>
       </div>

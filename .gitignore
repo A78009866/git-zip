@@ -63,3 +63,8 @@ Thumbs.db
 # Project specific
 *.zip
 backups/
+node_modules/
+package-lock.json
+uploads/
+workspaces/
+workspaces_uploads/

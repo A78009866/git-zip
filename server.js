@@ -226,6 +226,10 @@ app.use((req, res, next) => {
 const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
+// Workspace directory for beginner-friendly edit-before-push flow
+const workspaceDir = process.env.VERCEL ? '/tmp/workspaces' : path.join(__dirname, 'workspaces');
+if (!fs.existsSync(workspaceDir)) fs.mkdirSync(workspaceDir, { recursive: true });
+
 const upload = multer({
   dest: uploadDir,
   limits: { fileSize: 100 * 1024 * 1024 },
@@ -266,6 +270,10 @@ app.get('/dashboard', requireAuth, (req, res) => {
 
 app.get('/upload', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'upload.html'));
+});
+
+app.get('/workspace', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'views', 'workspace.html'));
 });
 
 // ─── GitHub OAuth ───
@@ -1235,6 +1243,9 @@ app.patch('/api/github/repos/:owner/:repo', requireApiAuth, async (req, res) => 
     res.json({ success: false, message: msg });
   }
 });
+
+// ─── Workspace routes (edit ZIP before push) ───
+require('./workspace')(app, workspaceDir);
 
 // ─── Global error handler ───
 app.use((err, req, res, next) => {

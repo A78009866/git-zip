@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مساحة العمل - git-zip</title>
+  <link rel="icon" href="https://ik.imagekit.io/Aite/post_media/1775677384191-1000126675_-DAThYlRs.webp">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a0a;color:#e4e4e7;min-height:100vh}
+    a{color:inherit;text-decoration:none}
+    .navbar{background:rgba(0,0,0,0.7);border-bottom:1px solid rgba(255,255,255,0.06);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px)}
+    .nav-brand{display:flex;align-items:center;gap:10px}
+    .nav-brand img{width:32px;height:32px;border-radius:8px}
+    .nav-brand h1{font-size:1.2rem;color:#fafafa;font-weight:700}
+    .nav-brand h1 span{color:#71717a}
+    .nav-links{display:flex;align-items:center;gap:16px}
+    .nav-link{color:#a1a1aa;font-size:0.85rem;transition:color .2s}
+    .nav-link:hover{color:#fafafa}
+    .user-pill{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:5px 14px 5px 6px;cursor:pointer}
+    .user-pill img{width:28px;height:28px;border-radius:50%}
+    .user-pill span{color:#a1a1aa;font-size:0.85rem}
+    .layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 64px)}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}}
+    .sidebar{border-left:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);padding:20px;overflow-y:auto}
+    @media(max-width:900px){.sidebar{border-left:none;border-bottom:1px solid rgba(255,255,255,0.06)}}
+    .sidebar h3{color:#fafafa;font-size:0.95rem;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .tree{font-size:0.85rem;color:#a1a1aa}
+    .tree-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .tree-item:hover{background:rgba(255,255,255,0.05);color:#fafafa}
+    .tree-item.active{background:rgba(0,200,80,0.12);color:#4ade80}
+    .tree-item svg{width:16px;height:16px;flex-shrink:0;stroke:currentColor}
+    .tree-children{padding-right:16px}
+    .main{padding:24px;overflow-y:auto}
+    .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid;font-family:inherit}
+    .btn-primary{background:rgba(0,200,80,0.12);color:#4ade80;border-color:rgba(0,200,80,0.3)}
+    .btn-primary:hover{background:rgba(0,200,80,0.2)}
+    .btn-secondary{background:rgba(255,255,255,0.05);color:#a1a1aa;border-color:rgba(255,255,255,0.1)}
+    .btn-secondary:hover{background:rgba(255,255,255,0.1);color:#fafafa}
+    .btn-danger{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.25)}
+    .btn-danger:hover{background:rgba(239,68,68,0.2)}
+    .btn:disabled{opacity:0.5;cursor:not-allowed}
+    .btn svg{width:16px;height:16px}
+    .hidden{display:none}
+    .editor-card{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px}
+    .editor-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+    .editor-title{color:#fafafa;font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:8px}
+    .editor-meta{color:#52525b;font-size:0.8rem}
+    .editor-actions{display:flex;gap:8px;flex-wrap:wrap}
+    textarea{width:100%;min-height:420px;background:#050505;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e4e4e7;padding:14px;font-family:'Fira Code',monospace,Consolas;font-size:0.9rem;resize:vertical;outline:none}
+    textarea:focus{border-color:rgba(0,200,80,0.4)}
+    .empty-state{text-align:center;padding:60px 20px;color:#52525b}
+    .empty-state svg{width:64px;height:64px;stroke:#3f3f46;margin-bottom:16px}
+    .panel{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px}
+    .panel h3{color:#fafafa;font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .form-group{margin-bottom:14px}
+    label{display:block;margin-bottom:6px;color:#a1a1aa;font-size:0.82rem;font-weight:500}
+    select,input[type="text"],textarea.commit-msg{width:100%;padding:11px 14px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#e4e4e7;font-size:0.9rem;outline:none;transition:border-color .2s;font-family:inherit}
+    select:focus,input:focus,textarea.commit-msg:focus{border-color:rgba(255,255,255,0.35)}
+    textarea.commit-msg{min-height:80px;resize:vertical}
+    .toast-container{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:500;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+    .toast{padding:12px 20px;border-radius:10px;font-size:0.85rem;font-weight:500;pointer-events:auto;animation:toastIn .3s ease-out;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+    .toast.success{background:rgba(5,150,105,0.15);border:1px solid rgba(5,150,105,0.3);color:#6ee7b7}
+    .toast.error{background:rgba(127,29,29,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
+    .toast.info{background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);color:#93c5fd}
+    .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.2);border-top:2px solid currentColor;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+    .file-input{display:none}
+    .intro{background:rgba(0,200,80,0.06);border:1px solid rgba(0,200,80,0.2);border-radius:12px;padding:16px;margin-bottom:20px;color:#a1a1aa;font-size:0.85rem;line-height:1.7}
+    .intro strong{color:#4ade80}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard" class="nav-brand">
+      <img src="https://ik.imagekit.io/Aite/post_media/1775677384191-1000126675_-DAThYlRs.webp" alt="logo">
+      <h1>git<span>-zip</span></h1>
+    </a>
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link">لوحة التحكم</a>
+      <a href="/upload" class="nav-link">رفع ZIP</a>
+      <div class="user-pill" id="userPill">
+        <img id="userAvatar" src="" alt="">
+        <span id="userName">...</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+        ملفات المشروع
+      </h3>
+      <div class="toolbar" style="margin-bottom:14px">
+        <button class="btn btn-secondary" onclick="document.getElementById('zipInput').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"></path></svg>
+          رفع ZIP
+        </button>
+        <input type="file" id="zipInput" class="file-input" accept=".zip">
+        <button class="btn btn-secondary" id="downloadBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>
+          تحميل ZIP
+        </button>
+      </div>
+      <div id="tree" class="tree">
+        <div class="empty-state" style="padding:20px 0">
+          <p>لا يوجد مشروع محمل. ابدأ برفع ملف ZIP.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="intro">
+        <strong>مرحباً بك في مساحة العمل!</strong> ارفع ملف ZIP، عدل الملفات النصية، ثم اضغط <strong>Commit</strong> لرفع التعديلات إلى GitHub.
+      </div>
+
+      <div class="toolbar">
+        <button class="btn btn-primary" id="newFileBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16m8-8H4"></path></svg>
+          ملف جديد
+        </button>
+        <button class="btn btn-primary" id="newFolderBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v1M12 19v-6m-3 3l3 3 3-3"></path></svg>
+          مجلد جديد
+        </button>
+      </div>
+
+      <div id="editorArea" class="editor-card hidden">
+        <div class="editor-header">
+          <div>
+            <div class="editor-title" id="editorTitle">...</div>
+            <div class="editor-meta" id="editorMeta"></div>
+          </div>
+          <div class="editor-actions">
+            <button class="btn btn-secondary" id="deleteFileBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              حذف
+            </button>
+            <button class="btn btn-primary" id="saveFileBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+              حفظ
+            </button>
+          </div>
+        </div>
+        <textarea id="fileEditor" spellcheck="false"></textarea>
+      </div>
+
+      <div id="emptyEditor" class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <p>اختر ملفاً من الشجرة على اليسار للبدء بالتعديل</p>
+      </div>
+
+      <div class="panel" style="margin-top:24px">
+        <h3>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+          Commit الى GitHub
+        </h3>
+        <div class="form-group">
+          <label>المستودع</label>
+          <select id="repoSelect"><option value="">جارٍ تحميل المستودعات...</option></select>
+        </div>
+        <div class="form-group">
+          <label>الفرع (Branch)</label>
+          <input type="text" id="branchInput" value="main" placeholder="main">
+        </div>
+        <div class="form-group">
+          <label>رسالة الـ Commit</label>
+          <textarea class="commit-msg" id="commitMsg" placeholder="مثال: تحديث ملفات المشروع"></textarea>
+        </div>
+        <button class="btn btn-primary" id="commitBtn" style="min-width:140px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+          رفع التعديلات
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const treeEl = document.getElementById('tree');
+    const editorArea = document.getElementById('editorArea');
+    const emptyEditor = document.getElementById('emptyEditor');
+    const fileEditor = document.getElementById('fileEditor');
+    const editorTitle = document.getElementById('editorTitle');
+    const editorMeta = document.getElementById('editorMeta');
+    const repoSelect = document.getElementById('repoSelect');
+    const branchInput = document.getElementById('branchInput');
+    const commitMsg = document.getElementById('commitMsg');
+    let currentFile = '';
+    let fileCache = {};
+
+    function toast(message, type='info') {
+      const el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.textContent = message;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function api(url, opts={}) {
+      const res = await fetch(url, { ...opts, headers: { 'X-Requested-With': 'XMLHttpRequest', ...(opts.headers||{}) } });
+      if (res.status === 401) { window.location.href = '/'; return; }
+      return res.json().catch(() => ({}));
+    }
+
+    async function loadUser() {
+      const data = await api('/api/me');
+      if (data && data.username) {
+        document.getElementById('userName').textContent = data.name || data.username;
+        document.getElementById('userAvatar').src = data.avatar || '';
+      }
+    }
+
+    async function loadRepos() {
+      repoSelect.innerHTML = '<option value="">جارٍ التحميل...</option>';
+      const data = await api('/api/github/repos');
+      if (!data || !data.success) { repoSelect.innerHTML = '<option value="">تعذر تحميل المستودعات</option>'; return; }
+      repoSelect.innerHTML = data.repos.map(r => `<option value="${r.full_name}">${r.full_name}</option>`).join('');
+    }
+
+    async function loadFiles(dirPath='') {
+      treeEl.innerHTML = '<div class="empty-state"><span class="spinner"></span></div>';
+      const data = await api('/api/workspace/files?path=' + encodeURIComponent(dirPath));
+      if (!data || !data.success) {
+        treeEl.innerHTML = '<div class="empty-state"><p>' + (data?.message || 'لا يوجد ملفات') + '</p></div>';
+        return;
+      }
+      treeEl.innerHTML = '';
+      const back = dirPath ? `<div class="tree-item" onclick="loadFiles('')">⤴ رجوع للجذر</div>` : '';
+      treeEl.innerHTML = back + data.entries.map(e => renderEntry(e, dirPath)).join('');
+    }
+
+    function renderEntry(entry, parentPath) {
+      const full = parentPath ? parentPath + '/' + entry.name : entry.name;
+      if (entry.type === 'dir') {
+        return `<div class="tree-item" onclick="toggleFolder(this,'${full}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+          ${entry.name}
+        </div>
+        <div class="tree-children hidden" id="folder-${btoa(full)}"></div>`;
+      }
+      return `<div class="tree-item" onclick="openFile('${full}', '${entry.name}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        ${entry.name}
+      </div>`;
+    }
+
+    window.toggleFolder = async function(el, full) {
+      const id = 'folder-' + btoa(full);
+      const child = document.getElementById(id);
+      if (child && child.innerHTML === '') {
+        const data = await api('/api/workspace/files?path=' + encodeURIComponent(full));
+        if (data && data.success) {
+          child.innerHTML = data.entries.map(e => renderEntry(e, full)).join('');
+        }
+      }
+      if (child) child.classList.toggle('hidden');
+    };
+
+    window.openFile = async function(full, name) {
+      document.querySelectorAll('.tree-item.active').forEach(i => i.classList.remove('active'));
+      const clicked = Array.from(document.querySelectorAll('.tree-item')).find(i => i.textContent.trim() === name);
+      if (clicked) clicked.classList.add('active');
+
+      const data = await api('/api/workspace/file?path=' + encodeURIComponent(full));
+      if (!data || !data.success) { toast('تعذر فتح الملف', 'error'); return; }
+      if (data.binary) { toast('هذا ملف ثنائي ولا يمكن تعديله هنا', 'error'); return; }
+
+      currentFile = full;
+      fileEditor.value = data.content;
+      editorTitle.textContent = name;
+      editorMeta.textContent = data.encoding;
+      editorArea.classList.remove('hidden');
+      emptyEditor.classList.add('hidden');
+    };
+
+    document.getElementById('saveFileBtn').onclick = async function() {
+      if (!currentFile) return;
+      const res = await api('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: currentFile, content: fileEditor.value })
+      });
+      if (res && res.success) toast('تم حفظ الملف', 'success');
+      else toast(res?.message || 'فشل الحفظ', 'error');
+    };
+
+    document.getElementById('deleteFileBtn').onclick = async function() {
+      if (!currentFile || !confirm('هل أنت متأكد من حذف هذا الملف؟')) return;
+      const res = await api('/api/workspace/file?path=' + encodeURIComponent(currentFile), { method: 'DELETE' });
+      if (res && res.success) {
+        toast('تم الحذف', 'success');
+        editorArea.classList.add('hidden');
+        emptyEditor.classList.remove('hidden');
+        currentFile = '';
+        loadFiles();
+      } else toast(res?.message || 'فشل الحذف', 'error');
+    };
+
+    document.getElementById('zipInput').onchange = async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const form = new FormData();
+      form.append('zipfile', file);
+      toast('جارٍ رفع الملف...', 'info');
+      const res = await fetch('/api/workspace/upload', { method: 'POST', body: form, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      const data = await res.json().catch(() => ({}));
+      if (data && data.success) {
+        toast(`تم رفع ${data.files.length} ملف`, 'success');
+        loadFiles();
+      } else toast(data?.message || 'فشل رفع الملف', 'error');
+      e.target.value = '';
+    };
+
+    document.getElementById('downloadBtn').onclick = function() {
+      window.location.href = '/api/workspace/download';
+    };
+
+    document.getElementById('newFileBtn').onclick = async function() {
+      const name = prompt('اسم الملف الجديد (مع المسار):', 'new-file.txt');
+      if (!name) return;
+      const res = await api('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: name, content: '' })
+      });
+      if (res && res.success) { toast('تم انشاء الملف', 'success'); loadFiles(); openFile(name, name.split('/').pop()); }
+      else toast(res?.message || 'فشل الانشاء', 'error');
+    };
+
+    document.getElementById('newFolderBtn').onclick = async function() {
+      const name = prompt('اسم المجلد الجديد:', 'new-folder');
+      if (!name) return;
+      const res = await api('/api/workspace/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: name + '/.gitkeep', content: '' })
+      });
+      if (res && res.success) { toast('تم انشاء المجلد', 'success'); loadFiles(); }
+      else toast(res?.message || 'فشل الانشاء', 'error');
+    };
+
+    document.getElementById('commitBtn').onclick = async function() {
+      const repo = repoSelect.value;
+      const branch = branchInput.value.trim();
+      const msg = commitMsg.value.trim();
+      if (!repo) { toast('اختر مستودعاً', 'error'); return; }
+      if (!msg) { toast('اكتب رسالة commit', 'error'); return; }
+      const btn = this;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> جارٍ الرفع...';
+      const res = await api('/api/workspace/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoFullName: repo, branch, commitMessage: msg })
+      });
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg> رفع التعديلات`;
+      if (res && res.success) toast(res.message, 'success');
+      else toast(res?.message || 'فشل الرفع', 'error');
+    };
+
+    loadUser();
+    loadRepos();
+    loadFiles();
+  </script>
+</body>
+</html>
