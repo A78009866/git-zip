@@ -1,8 +1,8 @@
 # Git-Zip | مدير المشاريع السهل
 
-Git-Zip is a beginner-friendly desktop application for managing Git projects and creating zip backups without using the command line.
+Git-Zip is a beginner-friendly web application for managing Git projects and creating zip backups without using the command line.
 
-Git-Zip هو تطبيق سطح مكتب سهل للمبتدئين لإدارة مشاريع Git وإنشاء نسخ احتياطية ZIP بدون استخدام سطر الأوامر.
+Git-Zip هو تطبيق ويب سهل للمبتدئين لإدارة مشاريع Git وإنشاء نسخ احتياطية ZIP بدون استخدام سطر الأوامر.
 
 ## Features | الميزات
 
@@ -27,7 +27,7 @@ Git-Zip هو تطبيق سطح مكتب سهل للمبتدئين لإدارة �
 ## Requirements | المتطلبات
 
 - Windows 10/11, Linux, or macOS
-- Python 3.8 or newer
+- Node.js 18 or newer
 - Git installed on your system: https://git-scm.com/downloads
 
 ## Installation | التثبيت
@@ -37,23 +37,16 @@ Git-Zip هو تطبيق سطح مكتب سهل للمبتدئين لإدارة �
 3. Install dependencies:
 
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
 ## Run | التشغيل
 
 ```bash
-python run.py
+npm start
 ```
 
-## Build EXE for Windows | بناء ملف تنفيذي للويندوز
-
-```bash
-pip install pyinstaller
-pyinstaller --onefile --windowed --name Git-Zip run.py
-```
-
-The `dist/Git-Zip.exe` file can be shared with anyone.
+Then open your browser at `http://localhost:3000`.
 
 ## How to use | كيفية الاستخدام
 
@@ -68,8 +61,9 @@ The `dist/Git-Zip.exe` file can be shared with anyone.
 
 ## Notes | ملاحظات
 
+- ZIP uploads up to 2 GB are supported.
+- Individual files larger than 100 MB are skipped because GitHub rejects them; the app will report which files were skipped.
 - For private repositories, configure Git credentials on your system once.
-- Arabic display may need `arabic-reshaper` and `python-bidi` installed (included in `requirements.txt`).
 
 ## License | الترخيص
 

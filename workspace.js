@@ -2,11 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const axios = require('axios');
-const AdmZip = require('adm-zip');
+const extractZip = require('extract-zip');
+const archiver = require('archiver');
 const multer = require('multer');
 
 // ─── Config ───
+// Allow large payloads for GitHub API and zip downloads
+axios.defaults.maxBodyLength = Infinity;
+axios.defaults.maxContentLength = Infinity;
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB for edited files
+const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB uploaded ZIP
+const MAX_GITHUB_FILE_SIZE = 100 * 1024 * 1024; // 100 MB per file on GitHub
 const TEXT_EXTENSIONS = new Set([
   'txt', 'md', 'markdown', 'json', 'js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs',
   'html', 'htm', 'css', 'scss', 'sass', 'less', 'xml', 'svg', 'yml', 'yaml',
@@ -161,7 +168,7 @@ module.exports = function (app, workspaceDir) {
 
   const workspaceUpload = multer({
     dest: workspaceUploadDir,
-    limits: { fileSize: 100 * 1024 * 1024 },
+    limits: { fileSize: MAX_UPLOAD_SIZE },
     fileFilter: (req, file, cb) => {
       if (file.mimetype === 'application/zip' || file.mimetype === 'application/x-zip-compressed' || file.originalname.endsWith('.zip')) {
         cb(null, true);
@@ -180,8 +187,7 @@ module.exports = function (app, workspaceDir) {
       if (fs.existsSync(wsPath)) fs.rmSync(wsPath, { recursive: true, force: true });
       fs.mkdirSync(wsPath, { recursive: true });
 
-      const zip = new AdmZip(req.file.path);
-      zip.extractAllTo(wsPath, true);
+      await extractZip(req.file.path, { dir: wsPath });
       fs.unlinkSync(req.file.path);
 
       // If zip contains a single top-level folder, move contents up
@@ -334,21 +340,26 @@ module.exports = function (app, workspaceDir) {
         if (!zipUrl) return res.json({ success: false, message: 'لم يتم توفير رابط تحميل المستودع' });
       }
 
-      const zipRes = await axios.get(zipUrl, {
-        responseType: 'arraybuffer',
-        headers: { 'User-Agent': 'git-zip-app' }
-      });
-
       const wsPath = getWorkspacePath(req, workspaceDir);
       const tmpDir = process.env.VERCEL ? '/tmp' : workspaceDir;
       tmpZip = path.join(tmpDir, `pull-${crypto.randomUUID()}.zip`);
       extractTmp = path.join(tmpDir, `pull-${crypto.randomUUID()}`);
 
-      fs.writeFileSync(tmpZip, Buffer.from(zipRes.data));
-      fs.mkdirSync(extractTmp, { recursive: true });
+      // Stream the zipball to disk to avoid loading large repositories into memory
+      const zipRes = await axios.get(zipUrl, {
+        responseType: 'stream',
+        headers: { 'User-Agent': 'git-zip-app' }
+      });
+      const writer = fs.createWriteStream(tmpZip);
+      await new Promise((resolve, reject) => {
+        zipRes.data.pipe(writer);
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+        zipRes.data.on('error', reject);
+      });
 
-      const zip = new AdmZip(tmpZip);
-      zip.extractAllTo(extractTmp, true);
+      fs.mkdirSync(extractTmp, { recursive: true });
+      await extractZip(tmpZip, { dir: extractTmp });
 
       // GitHub zipball has a top-level folder like owner-repo-sha/
       const top = fs.readdirSync(extractTmp);
@@ -422,9 +433,15 @@ module.exports = function (app, workspaceDir) {
       const headers = { Authorization: `Bearer ${token}`, 'User-Agent': 'git-zip-app' };
       const message = commitMessage || 'Update from git-zip workspace';
       let lastSha = null;
+      const skipped = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        const stat = fs.statSync(file.fullPath);
+        if (stat.size > MAX_GITHUB_FILE_SIZE) {
+          skipped.push(file.path);
+          continue;
+        }
         const content = fs.readFileSync(file.fullPath).toString('base64');
 
         let existingSha;
@@ -465,7 +482,8 @@ module.exports = function (app, workspaceDir) {
         } catch (e) { /* ignore */ }
       }
 
-      res.json({ success: true, message: `تم رفع ${pushed} ملفاً الى ${canonicalName}`, commitSha: lastSha, filesCount: pushed });
+      const skippedWarn = skipped.length ? ` (${skipped.length} ملف كبير تم تخطيه)` : '';
+      res.json({ success: true, message: `تم رفع ${pushed} ملفاً الى ${canonicalName}${skippedWarn}`, commitSha: lastSha, filesCount: pushed, skipped });
     } catch (err) {
       console.error('Workspace commit error:', err.response?.data || err.message);
       res.json({ success: false, message: err.response?.data?.message || 'فشل رفع التعديلات' });
@@ -473,20 +491,27 @@ module.exports = function (app, workspaceDir) {
   });
 
   // ─── Download workspace as ZIP ───
-  app.get('/api/workspace/download', requireApiAuth, (req, res) => {
+  app.get('/api/workspace/download', requireApiAuth, async (req, res) => {
     try {
       const wsPath = getWorkspacePath(req, workspaceDir);
       if (!fs.existsSync(wsPath)) return res.status(404).json({ success: false, message: 'لا يوجد مساحة عمل' });
 
-      const zip = new AdmZip();
-      zip.addLocalFolder(wsPath);
-      const zipBuf = zip.toBuffer();
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', 'attachment; filename="workspace.zip"');
-      res.send(zipBuf);
+
+      const archive = archiver('zip', { zlib: { level: 6 } });
+      archive.on('warning', (err) => { if (err.code !== 'ENOENT') console.error('Archiver warning:', err.message); });
+      archive.on('error', (err) => {
+        console.error('Archiver error:', err.message);
+        if (!res.headersSent) res.status(500).json({ success: false, message: 'فشل تحميل الملف المضغوط' });
+      });
+
+      archive.pipe(res);
+      archive.glob('**/*', { cwd: wsPath, dot: true, ignore: ['.git/**'] });
+      await archive.finalize();
     } catch (err) {
       console.error('Workspace download error:', err.message);
-      res.status(500).json({ success: false, message: 'فشل تحميل الملف المضغوط' });
+      if (!res.headersSent) res.status(500).json({ success: false, message: 'فشل تحميل الملف المضغوط' });
     }
   });
 };

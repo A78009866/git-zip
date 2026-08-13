@@ -1,7 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const multer = require('multer');
-const AdmZip = require('adm-zip');
+const extractZip = require('extract-zip');
 const axios = require('axios');
 const crypto = require('crypto');
 const path = require('path');
@@ -12,6 +12,13 @@ const { ipKeyGenerator } = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Allow large payloads for GitHub API and zip downloads
+axios.defaults.maxBodyLength = Infinity;
+axios.defaults.maxContentLength = Infinity;
+
+const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
+const MAX_GITHUB_FILE_SIZE = 100 * 1024 * 1024; // 100 MB per file
 
 // Trust Vercel's reverse proxy so req.ip returns the real client IP
 app.set('trust proxy', 1);
@@ -162,8 +169,8 @@ function decryptAuth(text) {
 }
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1gb' }));
+app.use(express.urlencoded({ extended: true, limit: '1gb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Cookie parser (no extra package needed)
@@ -232,7 +239,7 @@ if (!fs.existsSync(workspaceDir)) fs.mkdirSync(workspaceDir, { recursive: true }
 
 const upload = multer({
   dest: uploadDir,
-  limits: { fileSize: 100 * 1024 * 1024 },
+  limits: { fileSize: MAX_UPLOAD_SIZE },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/zip' || file.mimetype === 'application/x-zip-compressed' || file.originalname.endsWith('.zip')) {
       cb(null, true);
@@ -524,14 +531,16 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
     // Use canonical repo name from GitHub API to ensure correct casing
     repoFullName = access.data.full_name || repoFullName;
 
-    const zip = new AdmZip(req.file.path);
     extractPath = path.join(uploadDir, crypto.randomUUID());
-    zip.extractAllTo(extractPath, true);
+    fs.mkdirSync(extractPath, { recursive: true });
+    await extractZip(req.file.path, { dir: extractPath });
 
     const allFiles = [];
     function walkDir(dir, baseDir) {
       const items = fs.readdirSync(dir);
       for (const item of items) {
+        // Skip git metadata and macOS helper folders
+        if (item === '.git' || item === '__MACOSX') continue;
         const fullPath = path.join(dir, item);
         const stat = fs.statSync(fullPath);
 
@@ -552,7 +561,7 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
             console.warn(`⚠️ Suspicious relative path blocked: ${relativePath}`);
             continue;
           }
-          allFiles.push({ path: relativePath, fullPath });
+          allFiles.push({ path: relativePath, fullPath, size: stat.size });
         }
       }
     }
@@ -565,7 +574,15 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
     }
     walkDir(rootDir, rootDir);
 
-    if (allFiles.length === 0) return res.json({ success: false, message: 'ZIP file is empty' });
+    // GitHub rejects individual blobs larger than 100MB.
+    const skippedFiles = allFiles.filter(f => f.size > MAX_GITHUB_FILE_SIZE).map(f => f.path);
+    const filesToUpload = allFiles.filter(f => f.size <= MAX_GITHUB_FILE_SIZE);
+
+    if (filesToUpload.length === 0) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      try { fs.rmSync(extractPath, { recursive: true, force: true }); } catch (e) {}
+      return res.json({ success: false, message: `ZIP contains no files under ${MAX_GITHUB_FILE_SIZE / 1024 / 1024}MB. Skipped: ${skippedFiles.join(', ')}` });
+    }
 
     let latestCommitSha, treeSha;
 
@@ -658,11 +675,11 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
     if (isEmptyRepo) {
       console.log('Git Data API unavailable, falling back to Contents API for all files...');
       let lastCommitSha = null;
-      for (const file of allFiles) {
+      for (const [index, file] of filesToUpload.entries()) {
         try {
           const content = fs.readFileSync(file.fullPath);
           const putRes = await axios.put(`https://api.github.com/repos/${repoFullName}/contents/${file.path}`, {
-            message: allFiles.indexOf(file) === 0 ? message : `${message} - ${file.path}`,
+            message: index === 0 ? message : `${message} - ${file.path}`,
             content: content.toString('base64'),
             ...(branchName !== defaultBranch && lastCommitSha ? { branch: branchName } : {})
           }, { headers });
@@ -673,7 +690,8 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
       }
       fs.unlinkSync(req.file.path);
       fs.rmSync(extractPath, { recursive: true, force: true });
-      return res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName} (via Contents API)`, commitSha: lastCommitSha, filesCount: allFiles.length });
+      const warn = skippedFiles.length ? ` (skipped ${skippedFiles.length} file(s) over 100MB)` : '';
+      return res.json({ success: true, message: `Successfully pushed ${filesToUpload.length} files to ${repoFullName} (via Contents API)${warn}`, commitSha: lastCommitSha, filesCount: filesToUpload.length, skipped: skippedFiles });
     }
 
     // ── Normal path: Git Data API (repo has at least one commit) ──
@@ -681,19 +699,14 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
     let finalCommitSha = null;
 
     try {
-      // Create blobs in parallel batches (5 at a time) for speed
-      const BATCH_SIZE = 5;
+      // Create blobs sequentially to keep memory usage low for large files
       const treeItems = [];
-      for (let i = 0; i < allFiles.length; i += BATCH_SIZE) {
-        const batch = allFiles.slice(i, i + BATCH_SIZE);
-        const results = await Promise.all(batch.map(async (file) => {
-          const content = fs.readFileSync(file.fullPath);
-          const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
-            content: content.toString('base64'), encoding: 'base64'
-          }, { headers });
-          return { path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha };
-        }));
-        treeItems.push(...results);
+      for (const file of filesToUpload) {
+        const content = fs.readFileSync(file.fullPath);
+        const blobRes = await axios.post(`https://api.github.com/repos/${repoFullName}/git/blobs`, {
+          content: content.toString('base64'), encoding: 'base64'
+        }, { headers });
+        treeItems.push({ path: file.path, mode: '100644', type: 'blob', sha: blobRes.data.sha });
       }
 
       // Create new tree, commit, and update ref
@@ -712,7 +725,7 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
       // Fallback: upload files one-by-one via Contents API
       let lastSha = null;
       let uploadedCount = 0;
-      for (const file of allFiles) {
+      for (const file of filesToUpload) {
         try {
           const content = fs.readFileSync(file.fullPath);
 
@@ -745,7 +758,7 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
 
       finalCommitSha = lastSha;
       gitDataSuccess = true; // Mark as success since Contents API worked
-      console.log(`Fallback succeeded: uploaded ${uploadedCount}/${allFiles.length} files via Contents API`);
+      console.log(`Fallback succeeded: uploaded ${uploadedCount}/${filesToUpload.length} files via Contents API`);
     }
 
     fs.unlinkSync(req.file.path);
@@ -761,7 +774,7 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
       `👤 <b>المستخدم:</b> @${escapeHtml(req.session.githubUser)}\n` +
       `📁 <b>المستودع:</b> ${escapeHtml(repoFullName)}\n` +
       `🌿 <b>الفرع:</b> ${escapeHtml(branchName)}\n` +
-      `📄 <b>عدد الملفات:</b> ${allFiles.length}\n` +
+      `📄 <b>عدد الملفات:</b> ${filesToUpload.length}${skippedFiles.length ? ` (تجاهل ${skippedFiles.length} ملف كبير)` : ''}\n` +
       `💬 <b>رسالة الكوميت:</b> ${escapeHtml(message)}\n` +
       `🌐 <b>IP:</b> ${escapeHtml(uploadIp)}\n` +
       `💻 <b>النظام:</b> ${escapeHtml(uploadDevice.os)}\n` +
@@ -770,7 +783,8 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
       `🕐 <b>الوقت:</b> ${uploadTime}`
     );
 
-    res.json({ success: true, message: `Successfully pushed ${allFiles.length} files to ${repoFullName}`, commitSha: finalCommitSha, filesCount: allFiles.length });
+    const uploadWarn = skippedFiles.length ? ` (${skippedFiles.length} file(s) over 100MB skipped)` : '';
+    res.json({ success: true, message: `Successfully pushed ${filesToUpload.length} files to ${repoFullName}${uploadWarn}`, commitSha: finalCommitSha, filesCount: filesToUpload.length, skipped: skippedFiles });
 
   } catch (err) {
     try {
