@@ -6,9 +6,14 @@ const axios = require('axios');
 const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
+const { pipeline } = require('stream/promises');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { ipKeyGenerator } = require('express-rate-limit');
+const { generateClientTokenFromReadWriteToken } = require('@vercel/blob/client');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const { pushExtractedFolder } = require('./push-to-github');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,12 +33,12 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://esm.sh"],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:", "https:"],
-            connectSrc: ["'self'", "https://api.github.com", "https://api.vercel.com"],
+            connectSrc: ["'self'", "https:"],
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
             formAction: ["'self'"],
@@ -71,6 +76,29 @@ const authLimiter = rateLimit({
 });
 
 app.use('/api/', generalLimiter);
+
+// Vercel Blob token for large client-side uploads
+const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
+
+// Cloudflare R2 credentials for large client-side uploads
+const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID || '';
+const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID || '';
+const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY || '';
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || '';
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+const R2_CONFIGURED = Boolean(R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY && R2_BUCKET_NAME);
+
+let s3Client;
+if (R2_CONFIGURED) {
+  s3Client = new S3Client({
+    region: 'auto',
+    endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId: R2_ACCESS_KEY_ID,
+      secretAccessKey: R2_SECRET_ACCESS_KEY
+    }
+  });
+}
 
 // Telegram notification settings
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -808,6 +836,194 @@ app.post('/api/upload', requireApiAuth, uploadLimiter, upload.single('zipfile'),
     }
 
     res.json({ success: false, message: userMessage });
+  }
+});
+
+// ─── Vercel Blob large-file upload routes ───
+app.get('/api/storage-config', requireApiAuth, (req, res) => {
+  let provider = 'none';
+  if (R2_CONFIGURED) provider = 'r2';
+  else if (BLOB_READ_WRITE_TOKEN) provider = 'blob';
+  res.json({ provider });
+});
+
+// Legacy endpoint kept for compatibility
+app.get('/api/blob-config', requireApiAuth, (req, res) => {
+  res.json({ enabled: Boolean(BLOB_READ_WRITE_TOKEN) });
+});
+
+app.post('/api/blob-token', requireApiAuth, async (req, res) => {
+  try {
+    if (!BLOB_READ_WRITE_TOKEN) {
+      return res.status(503).json({ error: 'Vercel Blob is not configured' });
+    }
+    const { type, payload } = req.body || {};
+    if (type !== 'blob.generate-client-token') {
+      return res.status(400).json({ error: 'Invalid event type' });
+    }
+    const { pathname, clientPayload, multipart } = payload || {};
+    const safePathname = `uploads/${crypto.randomUUID()}-${path.basename(pathname || 'file.zip')}`;
+    const clientToken = await generateClientTokenFromReadWriteToken({
+      token: BLOB_READ_WRITE_TOKEN,
+      pathname: safePathname,
+      allowedContentTypes: ['application/zip', 'application/x-zip-compressed', 'application/octet-stream'],
+      maximumSizeInBytes: MAX_UPLOAD_SIZE,
+      addRandomSuffix: true,
+      validUntil: Date.now() + 10 * 60 * 1000,
+      tokenPayload: clientPayload || undefined
+    });
+    res.json({ clientToken });
+  } catch (err) {
+    console.error('Blob token error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to generate upload token' });
+  }
+});
+
+app.post('/api/upload-blob', requireApiAuth, uploadLimiter, async (req, res) => {
+  let zipPath = null;
+  let extractPath = null;
+  try {
+    const { blobUrl, repoFullName, branch, commitMessage } = req.body || {};
+    if (!blobUrl || !repoFullName) {
+      return res.json({ success: false, message: 'Blob URL and repository are required' });
+    }
+
+    zipPath = path.join(uploadDir, `blob-${crypto.randomUUID()}.zip`);
+    extractPath = path.join(uploadDir, crypto.randomUUID());
+
+    const writer = fs.createWriteStream(zipPath);
+    const resp = await axios.get(blobUrl, { responseType: 'stream' });
+    await pipeline(resp.data, writer);
+
+    fs.mkdirSync(extractPath, { recursive: true });
+    await extractZip(zipPath, { dir: extractPath });
+
+    const result = await pushExtractedFolder({
+      extractPath,
+      repoFullName,
+      branch,
+      commitMessage,
+      token: req.session.githubToken
+    });
+
+    // Telegram notification
+    const uploadTime = new Date().toLocaleString('ar-EG', { timeZone: 'Asia/Riyadh' });
+    const uploadIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection?.remoteAddress || 'غير معروف';
+    const uploadUA = req.headers['user-agent'] || 'Unknown';
+    const uploadDevice = parseUserAgent(uploadUA);
+    sendTelegramNotification(
+      `📤 <b>رفع ملفات جديدة - git-zip (Vercel Blob)</b>\n\n` +
+      `👤 <b>المستخدم:</b> @${escapeHtml(req.session.githubUser)}\n` +
+      `📁 <b>المستودع:</b> ${escapeHtml(repoFullName)}\n` +
+      `🌿 <b>الفرع:</b> ${escapeHtml(result.branchName || branch || 'main')}\n` +
+      `📄 <b>عدد الملفات:</b> ${result.filesCount}${result.skipped?.length ? ` (تجاهل ${result.skipped.length} ملف كبير)` : ''}\n` +
+      `💬 <b>رسالة الكوميت:</b> ${escapeHtml(result.message || commitMessage || 'Upload via git-zip')}\n` +
+      `🌐 <b>IP:</b> ${escapeHtml(uploadIp)}\n` +
+      `💻 <b>النظام:</b> ${escapeHtml(uploadDevice.os)}\n` +
+      `🔍 <b>المتصفح:</b> ${escapeHtml(uploadDevice.browser)}\n` +
+      `📲 <b>الجهاز:</b> ${escapeHtml(uploadDevice.device)}\n` +
+      `🕐 <b>الوقت:</b> ${uploadTime}`
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error('Blob upload error:', err.message);
+    const status = err.response?.status;
+    const ghMessage = err.response?.data?.message || '';
+    let userMessage = err.userMessage || 'Failed to process uploaded blob';
+    if (status === 404) userMessage = 'Repository not found or you do not have write access.';
+    else if (status === 403) userMessage = ghMessage.includes('rate limit') ? 'GitHub API rate limit reached.' : 'Access denied. Your GitHub token may not have sufficient permissions.';
+    else if (status === 422) userMessage = 'Invalid data sent to GitHub. ' + ghMessage;
+    else if (ghMessage) userMessage = ghMessage;
+    res.json({ success: false, message: userMessage });
+  } finally {
+    try { if (zipPath && fs.existsSync(zipPath)) fs.unlinkSync(zipPath); } catch (e) {}
+    try { if (extractPath && fs.existsSync(extractPath)) fs.rmSync(extractPath, { recursive: true, force: true }); } catch (e) {}
+  }
+});
+
+// ─── Cloudflare R2 large-file upload routes ───
+app.post('/api/r2-upload-url', requireApiAuth, async (req, res) => {
+  try {
+    if (!R2_CONFIGURED) {
+      return res.status(503).json({ error: 'Cloudflare R2 is not configured' });
+    }
+    const { filename } = req.body || {};
+    const key = `uploads/${crypto.randomUUID()}-${path.basename(filename || 'file.zip')}`;
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      ContentType: 'application/zip'
+    });
+    const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 600 });
+    const publicUrl = R2_PUBLIC_URL ? `${R2_PUBLIC_URL}/${key}` : uploadUrl;
+    res.json({ uploadUrl, publicUrl, key });
+  } catch (err) {
+    console.error('R2 upload URL error:', err.message);
+    res.status(500).json({ error: err.message || 'Failed to generate R2 upload URL' });
+  }
+});
+
+app.post('/api/upload-r2', requireApiAuth, uploadLimiter, async (req, res) => {
+  let zipPath = null;
+  let extractPath = null;
+  try {
+    const { publicUrl, repoFullName, branch, commitMessage } = req.body || {};
+    if (!publicUrl || !repoFullName) {
+      return res.json({ success: false, message: 'Public URL and repository are required' });
+    }
+
+    zipPath = path.join(uploadDir, `r2-${crypto.randomUUID()}.zip`);
+    extractPath = path.join(uploadDir, crypto.randomUUID());
+
+    const writer = fs.createWriteStream(zipPath);
+    const resp = await axios.get(publicUrl, { responseType: 'stream' });
+    await pipeline(resp.data, writer);
+
+    fs.mkdirSync(extractPath, { recursive: true });
+    await extractZip(zipPath, { dir: extractPath });
+
+    const result = await pushExtractedFolder({
+      extractPath,
+      repoFullName,
+      branch,
+      commitMessage,
+      token: req.session.githubToken
+    });
+
+    // Telegram notification
+    const uploadTime = new Date().toLocaleString('ar-EG', { timeZone: 'Asia/Riyadh' });
+    const uploadIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection?.remoteAddress || 'غير معروف';
+    const uploadUA = req.headers['user-agent'] || 'Unknown';
+    const uploadDevice = parseUserAgent(uploadUA);
+    sendTelegramNotification(
+      `📤 <b>رفع ملفات جديدة - git-zip (Cloudflare R2)</b>\n\n` +
+      `👤 <b>المستخدم:</b> @${escapeHtml(req.session.githubUser)}\n` +
+      `📁 <b>المستودع:</b> ${escapeHtml(repoFullName)}\n` +
+      `🌿 <b>الفرع:</b> ${escapeHtml(result.branchName || branch || 'main')}\n` +
+      `📄 <b>عدد الملفات:</b> ${result.filesCount}${result.skipped?.length ? ` (تجاهل ${result.skipped.length} ملف كبير)` : ''}\n` +
+      `💬 <b>رسالة الكوميت:</b> ${escapeHtml(result.message || commitMessage || 'Upload via git-zip')}\n` +
+      `🌐 <b>IP:</b> ${escapeHtml(uploadIp)}\n` +
+      `💻 <b>النظام:</b> ${escapeHtml(uploadDevice.os)}\n` +
+      `🔍 <b>المتصفح:</b> ${escapeHtml(uploadDevice.browser)}\n` +
+      `📲 <b>الجهاز:</b> ${escapeHtml(uploadDevice.device)}\n` +
+      `🕐 <b>الوقت:</b> ${uploadTime}`
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error('R2 upload error:', err.message);
+    const status = err.response?.status;
+    const ghMessage = err.response?.data?.message || '';
+    let userMessage = err.userMessage || 'Failed to process uploaded R2 file';
+    if (status === 404) userMessage = 'Repository not found or you do not have write access.';
+    else if (status === 403) userMessage = ghMessage.includes('rate limit') ? 'GitHub API rate limit reached.' : 'Access denied. Your GitHub token may not have sufficient permissions.';
+    else if (status === 422) userMessage = 'Invalid data sent to GitHub. ' + ghMessage;
+    else if (ghMessage) userMessage = ghMessage;
+    res.json({ success: false, message: userMessage });
+  } finally {
+    try { if (zipPath && fs.existsSync(zipPath)) fs.unlinkSync(zipPath); } catch (e) {}
+    try { if (extractPath && fs.existsSync(extractPath)) fs.rmSync(extractPath, { recursive: true, force: true }); } catch (e) {}
   }
 });
 

@@ -63,6 +63,7 @@ Then open your browser at `http://localhost:3000`.
 
 - ZIP uploads up to 2 GB are supported.
 - Individual files larger than 100 MB are skipped because GitHub rejects them; the app will report which files were skipped.
+- To host on Vercel, set the environment variable `BLOB_READ_WRITE_TOKEN` from your Vercel Blob store. Files larger than 4.5 MB are uploaded directly from the browser to Vercel Blob to avoid Vercel's serverless body-size limit.
 - For private repositories, configure Git credentials on your system once.
 
 ## License | الترخيص

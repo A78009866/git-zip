@@ -502,6 +502,7 @@
     let selectedRepo = '';
     let selectedFile = null;
     let repos = [];
+    let storageProvider = 'none'; // 'r2', 'blob', or 'none'
 
     function escapeHtml(s) {
       if (!s) return '';
@@ -556,6 +557,11 @@
     apiFetch('/api/me').then(d=>{
       localStorage.setItem('gitzip_user',JSON.stringify(d));
       applyUserData(d);
+    }).catch(()=>{});
+
+    // Check which large-file upload backend is available (R2 preferred, then Blob)
+    apiFetch('/api/storage-config').then(d=>{
+      storageProvider = (d && d.provider) || 'none';
     }).catch(()=>{});
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -753,32 +759,113 @@
       const pt = document.getElementById('progressText');
       pc.style.display = 'block'; pf.style.width = '10%'; pt.textContent = 'جاري رفع الملف وفك الضغط...';
 
-      const formData = new FormData();
-      formData.append('zipfile', selectedFile);
-      formData.append('repoFullName', selectedRepo);
-      formData.append('branch', document.getElementById('branchName').value.trim() || 'main');
-      formData.append('commitMessage', document.getElementById('commitMessage').value.trim() || 'Upload via git-zip');
-
+      const branch = document.getElementById('branchName').value.trim() || 'main';
+      const commitMessage = document.getElementById('commitMessage').value.trim() || 'Upload via git-zip';
+      const BYPASS_SIZE = 4 * 1024 * 1024; // 4 MB - Vercel function body limit
+      let data;
       let progress = 10;
-      const iv = setInterval(() => {
-        if (progress < 85) { progress += Math.random()*8; pf.style.width = progress+'%'; if(progress>30)pt.textContent='جاري نشر الملفات على GitHub...'; if(progress>60)pt.textContent='جاري انشاء الـ Commit...'; }
-      }, 800);
+      let iv;
 
       try {
-        const data = await apiFetch('/api/upload', { method: 'POST', body: formData });
-        clearInterval(iv); pf.style.width = '100%';
+        if ((storageProvider === 'r2' || storageProvider === 'blob') && selectedFile.size > BYPASS_SIZE) {
+          if (storageProvider === 'r2') {
+            // Direct client upload to Cloudflare R2 via presigned PUT URL
+            pt.textContent = 'جاري التواصل مع خادم التخزين...';
+            const r2Meta = await apiFetch('/api/r2-upload-url', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ filename: selectedFile.name })
+            });
+            if (!r2Meta || !r2Meta.uploadUrl) throw new Error('تعذر الحصول على رابط الرفع');
+
+            pt.textContent = 'جاري الرفع إلى Cloudflare R2...';
+            const xhr = new XMLHttpRequest();
+            await new Promise((resolve, reject) => {
+              xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                  const pct = Math.min(10 + Math.round((e.loaded / e.total) * 60), 70);
+                  pf.style.width = pct + '%';
+                  pt.textContent = 'جاري الرفع إلى التخزين السحابي... ' + Math.round((e.loaded / e.total) * 100) + '%';
+                }
+              });
+              xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) resolve();
+                else reject(new Error('فشل الرفع إلى R2: ' + xhr.status));
+              });
+              xhr.addEventListener('error', () => reject(new Error('فشل الاتصال بـ R2')));
+              xhr.open('PUT', r2Meta.uploadUrl);
+              xhr.setRequestHeader('Content-Type', 'application/zip');
+              xhr.send(selectedFile);
+            });
+
+            pf.style.width = '75%'; pt.textContent = 'جاري نشر الملفات على GitHub...';
+            data = await apiFetch('/api/upload-r2', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ publicUrl: r2Meta.publicUrl, repoFullName: selectedRepo, branch, commitMessage })
+            });
+          } else {
+            // Direct client upload to Vercel Blob (supports files up to 5 TB)
+            pt.textContent = 'جاري التواصل مع خادم التخزين...';
+            const { upload } = await import('https://esm.sh/@vercel/blob/client');
+            const clientPayload = JSON.stringify({ repoFullName: selectedRepo, branch, commitMessage });
+            const blob = await upload(selectedFile.name, selectedFile, {
+              access: 'public',
+              handleUploadUrl: '/api/blob-token',
+              multipart: true,
+              clientPayload,
+              onUploadProgress: (p) => {
+                const pct = Math.min(10 + Math.round(p.percentage * 0.6), 70);
+                pf.style.width = pct + '%';
+                pt.textContent = 'جاري الرفع إلى التخزين السحابي... ' + Math.round(p.percentage) + '%';
+              }
+            });
+            pf.style.width = '75%'; pt.textContent = 'جاري نشر الملفات على GitHub...';
+            data = await apiFetch('/api/upload-blob', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ blobUrl: blob.url, repoFullName: selectedRepo, branch, commitMessage })
+            });
+          }
+        } else {
+          // Standard server-side upload (works for small files and local hosting)
+          const formData = new FormData();
+          formData.append('zipfile', selectedFile);
+          formData.append('repoFullName', selectedRepo);
+          formData.append('branch', branch);
+          formData.append('commitMessage', commitMessage);
+
+          iv = setInterval(() => {
+            if (progress < 85) {
+              progress += Math.random() * 8;
+              pf.style.width = progress + '%';
+              if (progress > 30) pt.textContent = 'جاري نشر الملفات على GitHub...';
+              if (progress > 60) pt.textContent = 'جاري انشاء الـ Commit...';
+            }
+          }, 800);
+
+          data = await apiFetch('/api/upload', { method: 'POST', body: formData });
+        }
+
+        if (iv) clearInterval(iv);
+        pf.style.width = '100%';
         if (data.success) {
           pt.textContent = 'تم بنجاح';
           const s = document.getElementById('uploadSuccess');
-          s.innerHTML = 'تم رفع <strong>'+data.filesCount+'</strong> ملف بنجاح الى <a href="https://github.com/'+selectedRepo+'" target="_blank">'+selectedRepo+'</a><br><span style="color:#52525b;font-size:0.8rem">SHA: '+((data.commitSha||'').substring(0,7))+'</span>';
+          s.innerHTML = 'تم رفع <strong>' + data.filesCount + '</strong> ملف بنجاح الى <a href="https://github.com/' + selectedRepo + '" target="_blank">' + selectedRepo + '</a><br><span style="color:#52525b;font-size:0.8rem">SHA: ' + ((data.commitSha || '').substring(0, 7)) + '</span>';
+          if (data.skipped && data.skipped.length) {
+            s.innerHTML += '<br><span style="color:#fca5a5;font-size:0.8rem">تم تخطي ' + data.skipped.length + ' ملف أكبر من 100MB: ' + escapeHtml(data.skipped.slice(0, 3).join(', ')) + (data.skipped.length > 3 ? '...' : '') + '</span>';
+          }
           s.style.display = 'block';
         } else {
           pc.style.display = 'none';
           showError('uploadError', data.message);
         }
       } catch (err) {
-        clearInterval(iv); pc.style.display = 'none';
-        showError('uploadError', 'حدث خطأ اثناء الرفع');
+        if (iv) clearInterval(iv);
+        pc.style.display = 'none';
+        console.error(err);
+        showError('uploadError', err.message || 'حدث خطأ اثناء الرفع');
       }
       btn.disabled = false; btnText.style.display = 'inline'; spinner.style.display = 'none';
     }
